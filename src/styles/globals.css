@@ -1,0 +1,263 @@
+/* ============================
+   全局样式 - Vibe Coding Showcase
+   ============================ */
+
+/* CSS 变量 */
+:root {
+  /* 颜色 - 黑白系 */
+  --bg-primary: #09090b;
+  --bg-secondary: #111114;
+  --bg-surface: #18181b;
+  --bg-hover: #222228;
+  --accent-primary: #ffffff;
+  --accent-secondary: #d4d4d8;
+  --accent-like: #f43f5e;
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --border-color: #303133;
+  --border-focus: #ffffff;
+
+  /* 渐变 - 已移除 */
+  --gradient-primary: #ffffff;
+  --gradient-card-glow: none;
+  --btn-text: #303133;
+
+  /* 玻璃拟态 & 光效 */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  --glow-color: rgba(120, 80, 255, 0.12);
+  --glow-color-hover: rgba(120, 80, 255, 0.22);
+  --glow-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 10px 40px rgba(120, 80, 255, 0.08);
+  --glow-shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 20px 60px rgba(120, 80, 255, 0.18);
+  --card-radius: 20px;
+
+  /* 半透明色 */
+  --overlay-dark: rgba(0, 0, 0, 0.6);
+  --overlay-nav: rgba(10, 10, 15, 0.85);
+  --accent-like-bg: rgba(244, 63, 94, 0.1);
+  --accent-like-border: rgba(244, 63, 94, 0.3);
+  --accent-like-hover: rgba(244, 63, 94, 0.2);
+  --accent-primary-bg: rgba(255, 255, 255, 0.08);
+  --accent-primary-border: rgba(255, 255, 255, 0.15);
+  --accent-primary-selected: rgba(255, 255, 255, 0.25);
+  --error-bg: rgba(255, 107, 107, 0.1);
+  --error-border: rgba(255, 107, 107, 0.3);
+  --success-color: #4ade80;
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --success-border: rgba(34, 197, 94, 0.3);
+  --danger-hover-bg: rgba(255, 107, 107, 0.1);
+
+  /* 字体 */
+  --font-serif: 'Playfair Display', 'Noto Serif SC', 'Georgia', serif;
+  --font-sans: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* 字号 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.75rem;
+  --text-4xl: 2.5rem;
+
+  /* 间距 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* 阴影 */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 40px rgba(255, 255, 255, 0.08);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  /* 过渡 */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.4s ease-out;
+}
+
+/* 亮色主题 */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f4f5;
+  --bg-surface: #ffffff;
+  --bg-hover: #e4e4e7;
+  --accent-primary: #303133;
+  --accent-secondary: #303133;
+  --accent-like: #e11d48;
+  --text-primary: #303133;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
+  --border-color: #e4e4e7;
+  --border-focus: #303133;
+
+  --gradient-primary: #303133;
+  --gradient-card-glow: none;
+  --btn-text: #ffffff;
+
+  --overlay-dark: rgba(0, 0, 0, 0.4);
+  --overlay-nav: rgba(255, 255, 255, 0.85);
+  --accent-like-bg: rgba(225, 29, 72, 0.08);
+  --accent-like-border: rgba(225, 29, 72, 0.25);
+  --accent-like-hover: rgba(225, 29, 72, 0.15);
+  --accent-primary-bg: rgba(48, 49, 51, 0.06);
+  --accent-primary-border: rgba(48, 49, 51, 0.12);
+  --accent-primary-selected: rgba(48, 49, 51, 0.2);
+  --error-bg: rgba(239, 68, 68, 0.08);
+  --error-border: rgba(239, 68, 68, 0.25);
+  --success-color: #16a34a;
+  --success-bg: rgba(34, 197, 94, 0.08);
+  --success-border: rgba(34, 197, 94, 0.25);
+  --danger-hover-bg: rgba(239, 68, 68, 0.08);
+
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(0, 0, 0, 0.12);
+  --glow-color: rgba(120, 80, 255, 0.06);
+  --glow-color-hover: rgba(120, 80, 255, 0.12);
+  --glow-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 10px 40px rgba(120, 80, 255, 0.05);
+  --glow-shadow-hover: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 20px 60px rgba(120, 80, 255, 0.1);
+}
+
+/* 重置样式 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--accent-primary);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  outline: none;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* 骨架屏动画 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* 渐变文字 */
+.gradient-text {
+  color: var(--accent-primary);
+}
+
+/* 衬线标题 */
+h1, h2, h3 {
+  font-family: var(--font-serif);
+}
+
+.gradient-text {
+  font-family: var(--font-serif);
+}
+
+/* 容器 */
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  :root {
+    --text-4xl: 2rem;
+    --text-3xl: 1.5rem;
+  }
+}

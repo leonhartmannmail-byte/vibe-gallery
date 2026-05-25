@@ -1,0 +1,104 @@
+.cover-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cover-picker-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cover-picker-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cover-picker-bg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 8px;
+}
+
+.cover-picker-bg-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cover-picker-bg-swatch:hover {
+  transform: scale(1.1);
+}
+
+.cover-picker-bg-swatch.selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-selected);
+}
+
+.cover-picker-bg-none {
+  background: var(--bg-surface) !important;
+  border: 2px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.cover-picker-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 8px;
+}
+
+.cover-picker-emoji-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-color);
+  background: var(--bg-surface);
+  cursor: pointer;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.cover-picker-emoji-btn:hover {
+  border-color: var(--accent-secondary);
+  background: var(--accent-primary-bg);
+}
+
+.cover-picker-emoji-btn.selected {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-border);
+  box-shadow: 0 0 0 2px var(--accent-primary-selected);
+}
+
+.cover-picker-emoji-none {
+  border-style: dashed;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.cover-picker-preview {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 280px;
+  overflow: hidden;
+}
+
+.cover-picker-preview-emoji {
+  font-size: 64px;
+  line-height: 1;
+}
