@@ -14,6 +14,8 @@ const Profile = lazy(() => import('./pages/Profile'))
 const TagPage = lazy(() => import('./pages/TagPage'))
 const CollectionDetail = lazy(() => import('./pages/CollectionDetail'))
 const Privacy = lazy(() => import('./pages/Privacy'))
+const AuthConfirm = lazy(() => import('./pages/AuthConfirm'))
+const Explore = lazy(() => import('./pages/Explore'))
 
 function LoadingFallback() {
   return (
@@ -33,7 +35,9 @@ function App() {
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/explore" element={<Explore />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/confirmed" element={<AuthConfirm />} />
                 <Route path="/publish" element={<Publish />} />
                 <Route path="/edit/:id" element={<EditWork />} />
                 <Route path="/work/:id" element={<WorkDetail />} />

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Mail, Lock, User, ArrowRight, CheckCircle, RefreshCw } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -8,6 +8,7 @@ import './Auth.css'
 
 function Auth() {
   const { t } = useLanguage()
+  const [searchParams] = useSearchParams()
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,6 +20,18 @@ function Auth() {
   const [resendDone, setResendDone] = useState(false)
   const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
+
+  // 处理 Supabase 邮箱验证后的跳转（?confirmed=true）
+  const confirmed = searchParams.get('confirmed')
+  const [showConfirmed, setShowConfirmed] = useState(confirmed === 'true')
+
+  useEffect(() => {
+    if (confirmed === 'true') {
+      setShowConfirmed(true)
+      // 清除 URL 参数
+      window.history.replaceState({}, '', '/auth')
+    }
+  }, [confirmed])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -229,6 +242,12 @@ function Auth() {
         </p>
 
         <AnimatePresence mode="wait">
+          {showConfirmed && (
+            <motion.div className="auth-confirmed" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <CheckCircle size={16} />
+              {t('auth.confirmSuccess')} {t('auth.confirmSubtitle')}
+            </motion.div>
+          )}
           {error && (
             <motion.div className="auth-error" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               {error}

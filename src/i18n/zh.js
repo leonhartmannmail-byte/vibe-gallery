@@ -18,6 +18,7 @@ const zh = {
   'navbar.user': '用户',
   'navbar.themeToLight': '切换到亮色模式',
   'navbar.themeToDark': '切换到暗色模式',
+  'navbar.explore': '探索',
 
   // Home
   'home.heroTagline': 'AI 创作者灵感社区',
@@ -71,6 +72,10 @@ const zh = {
   'auth.stepClickResetLink': '打开邮箱点击重置链接',
   'auth.stepSetNewPassword': '设置新密码',
   'auth.stepReturnLogin2': '返回登录',
+  'auth.confirmSuccess': '邮箱验证成功！',
+  'auth.confirmSubtitle': '你的邮箱已验证通过，现在可以登录了',
+  'auth.confirmAutoLogin': '正在自动登录，即将跳转到首页...',
+  'auth.confirmProcessing': '正在验证中...',
 
   // Publish
   'publish.noAuth': '请先登录后再发布作品',
@@ -299,6 +304,30 @@ const zh = {
   'home.webDesktop': 'Web & Desktop',
   'home.latestDrops': 'Latest Drops',
   'home.platformFilter': '平台',
+  'home.browseAll': '浏览全部作品',
+  'home.trendingThisWeek': '本周热门作品',
+  'home.featuredCreators': '优秀创作者',
+  'home.viewProfile': '查看主页',
+  'home.worksCount': '{n} 个作品',
+
+  // Explore
+  'explore.title': '探索',
+  'explore.subtitle': '浏览所有作品',
+  'explore.search': '搜索作品...',
+  'explore.filterCategory': '分类',
+  'explore.filterPlatform': '平台',
+  'explore.filterTool': 'AI 工具',
+  'explore.filterSort': '排序',
+  'explore.empty': '没有找到作品',
+
+  // Content categories
+  'category.showcase': '作品展示',
+  'category.product': '产品发布',
+  'category.experimental': '实验项目',
+
+  // Publish category
+  'publish.category': '内容分类',
+  'publish.categoryHint': '选择一个分类',
 }
 
 export default zh

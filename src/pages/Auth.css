@@ -65,6 +65,24 @@
   margin-bottom: var(--space-4);
 }
 
+.auth-confirmed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-color);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+  line-height: 1.5;
+}
+
+.auth-confirmed svg {
+  flex-shrink: 0;
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;

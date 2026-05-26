@@ -75,6 +75,8 @@
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
 
   /* 圆角 */
   --radius-sm: 6px;
@@ -86,6 +88,21 @@
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 8px 40px rgba(255, 255, 255, 0.08);
   --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+  /* Elevation System */
+  --elevation-bg: var(--bg-primary);
+  --elevation-surface-bg: rgba(255, 255, 255, 0.02);
+  --elevation-surface-border: rgba(255, 255, 255, 0.04);
+  --elevation-card-bg: rgba(255, 255, 255, 0.03);
+  --elevation-card-border: rgba(255, 255, 255, 0.06);
+  --elevation-card-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 10px 40px rgba(120,80,255,0.08);
+  --elevation-card-blur: 20px;
+  --elevation-card-hover-bg: rgba(255, 255, 255, 0.05);
+  --elevation-card-hover-border: rgba(255, 255, 255, 0.12);
+  --elevation-card-hover-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 20px 60px rgba(120,80,255,0.18);
+  --elevation-floating-bg: rgba(255, 255, 255, 0.06);
+  --elevation-floating-border: rgba(255, 255, 255, 0.1);
+  --elevation-floating-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 
   /* 过渡 */
   --transition-fast: 0.15s ease;
@@ -138,6 +155,18 @@
   --glow-color-hover: rgba(120, 80, 255, 0.12);
   --glow-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 10px 40px rgba(120, 80, 255, 0.05);
   --glow-shadow-hover: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 20px 60px rgba(120, 80, 255, 0.1);
+
+  --elevation-surface-bg: rgba(0, 0, 0, 0.01);
+  --elevation-surface-border: rgba(0, 0, 0, 0.03);
+  --elevation-card-bg: rgba(255, 255, 255, 0.7);
+  --elevation-card-border: rgba(0, 0, 0, 0.06);
+  --elevation-card-shadow: 0 0 0 1px rgba(0,0,0,0.03), 0 10px 40px rgba(120,80,255,0.05);
+  --elevation-card-hover-bg: rgba(255, 255, 255, 0.85);
+  --elevation-card-hover-border: rgba(0, 0, 0, 0.1);
+  --elevation-card-hover-shadow: 0 0 0 1px rgba(0,0,0,0.06), 0 20px 60px rgba(120,80,255,0.1);
+  --elevation-floating-bg: rgba(255, 255, 255, 0.9);
+  --elevation-floating-border: rgba(0, 0, 0, 0.08);
+  --elevation-floating-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 /* 重置样式 */

@@ -28,6 +28,12 @@
   justify-content: space-between;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
 .navbar-loading {
   width: 36px;
   height: 36px;
@@ -51,6 +57,21 @@
 
 .navbar-logo:hover {
   text-shadow: 0 0 20px rgba(120, 80, 255, 0.3);
+}
+
+.navbar-explore-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.navbar-explore-link:hover {
+  color: var(--text-primary);
 }
 
 .navbar-actions {

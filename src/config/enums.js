@@ -3,6 +3,12 @@ export const PLATFORM_TYPES = [
   { value: 'web', label: { zh: 'Web / Desktop', en: 'Web / Desktop' }, icon: 'Monitor' },
 ]
 
+export const CONTENT_CATEGORIES = [
+  { value: 'showcase', label: { zh: '作品展示', en: 'Showcase' }, icon: 'Eye', color: '#a78bfa' },
+  { value: 'product', label: { zh: '产品发布', en: 'Product' }, icon: 'Rocket', color: '#22c55e' },
+  { value: 'experimental', label: { zh: '实验项目', en: 'Experimental' }, icon: 'FlaskConical', color: '#f97316' },
+]
+
 export const AI_TOOLS = [
   { value: 'Cursor', label: 'Cursor', color: '#00D4AA' },
   { value: 'Claude Code', label: 'Claude Code', color: '#D97706' },

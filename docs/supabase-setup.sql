@@ -191,3 +191,10 @@ ALTER TABLE works ADD COLUMN IF NOT EXISTS one_liner text DEFAULT '';
 CREATE INDEX IF NOT EXISTS idx_works_platform ON works(platform);
 CREATE INDEX IF NOT EXISTS idx_works_ai_tools ON works USING GIN(ai_tools);
 CREATE INDEX IF NOT EXISTS idx_works_ai_models ON works USING GIN(ai_models);
+
+-- ========================================
+-- 内容分类（新增）
+-- ========================================
+ALTER TABLE works ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT 'showcase'
+  CHECK (category IN ('showcase', 'product', 'experimental'));
+CREATE INDEX IF NOT EXISTS idx_works_category ON works(category);

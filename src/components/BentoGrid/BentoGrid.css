@@ -1,0 +1,69 @@
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 220px;
+  gap: var(--space-5);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* Large: 2 cols x 2 rows */
+.bento-item.bento-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* Tall: 1 col x 2 rows */
+.bento-item.bento-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+/* Wide: 2 cols x 1 row */
+.bento-item.bento-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+/* Small: default 1x1 */
+.bento-item.bento-small {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* Make WorkCard fill the bento cell */
+.bento-item .work-card {
+  height: 100%;
+}
+
+.bento-item .work-card-link {
+  height: 100%;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 180px;
+  }
+  .bento-item.bento-large,
+  .bento-item.bento-tall,
+  .bento-item.bento-wide {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+@media (max-width: 500px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+}

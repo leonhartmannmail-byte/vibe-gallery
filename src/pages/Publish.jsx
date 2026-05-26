@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Send, Link as LinkIcon, Tag, Image as ImageIcon, Palette, Zap, Settings, Smartphone, Monitor, Check } from 'lucide-react'
+import { Send, Link as LinkIcon, Tag, Image as ImageIcon, Palette, Zap, Settings, Smartphone, Monitor, Check, Eye, Rocket, FlaskConical } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
-import { PLATFORM_TYPES, AI_TOOLS, AI_MODELS } from '../config/enums'
+import { PLATFORM_TYPES, AI_TOOLS, AI_MODELS, CONTENT_CATEGORIES } from '../config/enums'
 import ImageUploader from '../components/ImageUploader/ImageUploader'
 import DefaultCoverPicker from '../components/DefaultCoverPicker/DefaultCoverPicker'
 import './Publish.css'
@@ -33,6 +33,7 @@ function Publish() {
 
   // 新字段
   const [platform, setPlatform] = useState('web')
+  const [category, setCategory] = useState('showcase')
   const [selectedTools, setSelectedTools] = useState([])
   const [selectedModels, setSelectedModels] = useState([])
   const [aiWorkflow, setAiWorkflow] = useState('')
@@ -151,6 +152,7 @@ function Publish() {
         platform,
         ai_tools: selectedTools,
         ai_models: selectedModels,
+        category,
       })
 
       if (createErr) throw createErr
@@ -210,6 +212,29 @@ function Publish() {
                     <Icon size={18} />
                     <span>{p.label[locale === 'en' ? 'en' : 'zh']}</span>
                     {platform === p.value && <Check size={14} className="publish-platform-check" />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* 内容分类 */}
+          <div className="publish-field">
+            <label>{t('publish.category')}</label>
+            <div className="publish-chips">
+              {CONTENT_CATEGORIES.map(cat => {
+                const Icon = cat.value === 'showcase' ? Eye : cat.value === 'product' ? Rocket : FlaskConical
+                return (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    className={`publish-chip ${category === cat.value ? 'active' : ''}`}
+                    style={category === cat.value ? { borderColor: cat.color, color: cat.color, background: `${cat.color}15` } : {}}
+                    onClick={() => setCategory(cat.value)}
+                  >
+                    {category === cat.value && <Check size={12} />}
+                    <Icon size={14} />
+                    {cat.label[locale === 'en' ? 'en' : 'zh']}
                   </button>
                 )
               })}

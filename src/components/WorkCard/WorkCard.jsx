@@ -51,7 +51,7 @@ function WorkCard({ work, index = 0, layout = 'grid' }) {
   return (
     <motion.div
       ref={cardRef}
-      className={`work-card ${isMobile ? 'work-card--mobile' : ''} ${layout === 'horizontal' ? 'work-card--horizontal' : ''}`}
+      className={`work-card ${isMobile ? 'work-card--mobile' : ''} ${layout === 'horizontal' ? 'work-card--horizontal' : ''} ${layout === 'bento' ? 'work-card--bento' : ''}`}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -88,6 +88,17 @@ function WorkCard({ work, index = 0, layout = 'grid' }) {
           )}
           <div className="work-card-cover-fade" />
 
+          {/* Title overlay on cover */}
+          <div className="work-card-cover-info">
+            <h3 className="work-card-title">{title}</h3>
+            {likeCount && (
+              <div className="work-card-heat">
+                <Heart size={12} />
+                <span>{likeCount}</span>
+              </div>
+            )}
+          </div>
+
           {/* Badge */}
           {badge && (
             <div className={`work-card-badge work-card-badge--${badge.type}`}>
@@ -106,15 +117,6 @@ function WorkCard({ work, index = 0, layout = 'grid' }) {
 
         {/* Content */}
         <div className="work-card-body">
-          <div className="work-card-header">
-            <h3 className="work-card-title">{title}</h3>
-            {likeCount && (
-              <div className="work-card-heat">
-                <Heart size={12} />
-                <span>{likeCount}</span>
-              </div>
-            )}
-          </div>
 
           {/* AI Tool badges */}
           {tools.length > 0 && (

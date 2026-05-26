@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { TrendingUp, Clock, Sparkles, Star, BookOpen, Flame, ArrowRight, Terminal, Bot, Zap, Cpu, Plug, Rocket, Eye, FlaskConical, Smartphone, Monitor } from 'lucide-react'
+import { Sparkles, Flame, ArrowRight, Terminal, Bot, Zap, Cpu, Plug, Rocket, Eye, FlaskConical, Star, Users } from 'lucide-react'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
+import { sbQuery } from '../lib/supabase'
+import BentoGrid from '../components/BentoGrid/BentoGrid'
 import WorkCard from '../components/WorkCard/WorkCard'
 import GridBackground from '../components/Background/GridBackground'
 import SplashCursor from '../components/SplashCursor/SplashCursor'
-import FeaturedSection from '../components/FeaturedSection/FeaturedSection'
-import CollectionCard from '../components/CollectionCard/CollectionCard'
-import { FEATURED_WORK_IDS, COLLECTIONS } from '../config/featured'
+import { FEATURED_WORK_IDS } from '../config/featured'
 import './Home.css'
 
 const trendingTags = [
@@ -26,57 +26,98 @@ const trendingTags = [
 ]
 
 function Home() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [sort, setSort] = useState(searchParams.get('sort') || 'latest')
-  const [activeTag, setActiveTag] = useState(searchParams.get('tag') || null)
-  const { works, loading, hasMore, fetchWorks, fetchWorksByIds, fetchWorksByPlatform } = useWorks()
   const { t } = useLanguage()
-  const [page, setPage] = useState(0)
-  const [featuredWorks, setFeaturedWorks] = useState([])
-  const [mobileWorks, setMobileWorks] = useState([])
-  const [webWorks, setWebWorks] = useState([])
+  const { fetchWorksByIds } = useWorks()
+  const [bentoWorks, setBentoWorks] = useState([])
+  const [trendingWorks, setTrendingWorks] = useState([])
+  const [featuredCreators, setFeaturedCreators] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    setPage(0)
-    fetchWorks({ page: 0, sort, tag: activeTag })
-  }, [sort, activeTag, fetchWorks])
+    async function load() {
+      try {
+        // Bento works
+        let works = []
+        if (FEATURED_WORK_IDS.length > 0) {
+          works = await fetchWorksByIds(FEATURED_WORK_IDS)
+        }
+        if (works.length === 0) {
+          const data = await sbQuery('works', {
+            params: '?select=*&order=likes_count.desc&limit=6'
+          })
+          const userIds = [...new Set((data || []).map(w => w.user_id))]
+          if (userIds.length) {
+            const profiles = await sbQuery('profiles', {
+              params: `?select=id,username,avatar_url&id=in.(${userIds.join(',')})`
+            })
+            const profileMap = {}
+            profiles?.forEach(p => { profileMap[p.id] = p })
+            works = (data || []).map(w => ({ ...w, profiles: profileMap[w.user_id] || null }))
+          } else {
+            works = data || []
+          }
+        }
+        setBentoWorks(works)
 
-  useEffect(() => {
-    if (FEATURED_WORK_IDS.length > 0) {
-      fetchWorksByIds(FEATURED_WORK_IDS).then(setFeaturedWorks)
+        // Trending this week (parallel)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
+        const [trendingData, allWorksLite] = await Promise.all([
+          sbQuery('works', {
+            params: `?select=*&created_at=gte.${sevenDaysAgo}&order=likes_count.desc&limit=8`
+          }),
+          sbQuery('works', { params: '?select=user_id,likes_count' }),
+        ])
+
+        // Trending: fallback to top works if < 3 in last 7 days
+        let trending = trendingData || []
+        if (trending.length < 3) {
+          trending = await sbQuery('works', {
+            params: '?select=*&order=likes_count.desc&limit=8'
+          }) || []
+        }
+        if (trending.length) {
+          const tUserIds = [...new Set(trending.map(w => w.user_id))]
+          const tProfiles = await sbQuery('profiles', {
+            params: `?select=id,username,avatar_url&id=in.(${tUserIds.join(',')})`
+          })
+          const tMap = {}
+          tProfiles?.forEach(p => { tMap[p.id] = p })
+          setTrendingWorks(trending.map(w => ({ ...w, profiles: tMap[w.user_id] || null })))
+        }
+
+        // Featured Creators: aggregate by user_id
+        if (allWorksLite) {
+          const creatorMap = {}
+          allWorksLite.forEach(w => {
+            if (!creatorMap[w.user_id]) {
+              creatorMap[w.user_id] = { userId: w.user_id, workCount: 0, totalLikes: 0 }
+            }
+            creatorMap[w.user_id].workCount++
+            creatorMap[w.user_id].totalLikes += (w.likes_count || 0)
+          })
+          const topCreators = Object.values(creatorMap)
+            .sort((a, b) => b.totalLikes - a.totalLikes)
+            .slice(0, 6)
+          if (topCreators.length) {
+            const cIds = topCreators.map(c => c.userId)
+            const cProfiles = await sbQuery('profiles', {
+              params: `?select=id,username,avatar_url,bio&id=in.(${cIds.join(',')})`
+            })
+            const enriched = topCreators.map(c => ({
+              ...c,
+              profile: cProfiles?.find(p => p.id === c.userId) || null,
+            }))
+            setFeaturedCreators(enriched)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load home data:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-    fetchWorksByPlatform({ platform: 'mobile', limit: 8 }).then(setMobileWorks)
-    fetchWorksByPlatform({ platform: 'web', limit: 8 }).then(setWebWorks)
-  }, [fetchWorksByIds, fetchWorksByPlatform])
-
-  function handleSortChange(newSort) {
-    setSort(newSort)
-    const params = new URLSearchParams(searchParams)
-    params.set('sort', newSort)
-    setSearchParams(params)
-  }
-
-  function handleTagClick(tag) {
-    const newTag = activeTag === tag ? null : tag
-    setActiveTag(newTag)
-    const params = new URLSearchParams(searchParams)
-    if (newTag) {
-      params.set('tag', newTag)
-    } else {
-      params.delete('tag')
-    }
-    setSearchParams(params)
-  }
-
-  function handleLoadMore() {
-    const nextPage = page + 1
-    setPage(nextPage)
-    fetchWorks({ page: nextPage, sort, tag: activeTag })
-  }
-
-  const workIdSet = new Set(works.map(w => w.id))
-  const uniqueFeatured = featuredWorks.filter(fw => !workIdSet.has(fw.id))
-  const allWorks = [...uniqueFeatured, ...works]
+    load()
+  }, [fetchWorksByIds])
 
   return (
     <div className="home-page">
@@ -130,57 +171,65 @@ function Home() {
         </div>
         <div className="home-trending-scroll">
           {trendingTags.map(({ label, tag, icon: Icon }) => (
-            <button
+            <Link
               key={tag}
-              className={`home-tag ${activeTag === tag ? 'home-tag--active' : ''}`}
-              onClick={() => handleTagClick(tag)}
+              to={`/tag/${tag}`}
+              className="home-tag"
             >
               <Icon size={12} />
               <span>{label}</span>
-            </button>
+            </Link>
           ))}
         </div>
       </motion.section>
 
-      {/* Featured */}
-      <FeaturedSection title={t('home.featured')} icon={Star} workIds={FEATURED_WORK_IDS} works={allWorks} />
-
-      {/* Mobile Apps */}
-      {mobileWorks.length > 0 && (
+      {/* Bento Grid — Featured / Trending */}
+      {bentoWorks.length > 0 && (
         <motion.section
-          className="home-section"
+          className="home-bento-section"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <div className="home-section-header">
-            <Smartphone size={20} className="home-section-icon" />
-            <h2>{t('home.mobileApps')}</h2>
+            <Star size={20} className="home-section-icon" />
+            <h2>{t('home.featured')}</h2>
           </div>
-          <div className="home-section-scroll">
-            {mobileWorks.map((work, i) => (
-              <div key={work.id} className="home-section-item home-section-item--mobile">
-                <WorkCard work={work} index={i} />
-              </div>
-            ))}
-          </div>
+          <BentoGrid works={bentoWorks} />
         </motion.section>
       )}
 
-      {/* Web & Desktop */}
-      {webWorks.length > 0 && (
+      {loading && bentoWorks.length === 0 && (
+        <div className="home-bento-section">
+          <div className="home-section-header">
+            <Star size={20} className="home-section-icon" />
+            <h2>{t('home.featured')}</h2>
+          </div>
+          <div className="home-bento-skeleton">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className={`skeleton bento-skeleton-item bento-skeleton-${i}`} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Trending This Week */}
+      {trendingWorks.length > 0 && (
         <motion.section
           className="home-section"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <div className="home-section-header">
-            <Monitor size={20} className="home-section-icon" />
-            <h2>{t('home.webDesktop')}</h2>
+            <Flame size={20} className="home-section-icon home-section-icon--trending" />
+            <h2>{t('home.trendingThisWeek')}</h2>
+            <Link to="/explore?sort=popular" className="home-section-view-all">
+              {t('home.viewAll')} <ArrowRight size={14} />
+            </Link>
           </div>
           <div className="home-section-scroll">
-            {webWorks.map((work, i) => (
+            {trendingWorks.map((work, i) => (
               <div key={work.id} className="home-section-item">
                 <WorkCard work={work} index={i} />
               </div>
@@ -189,74 +238,56 @@ function Home() {
         </motion.section>
       )}
 
-      {/* Collections */}
-      {COLLECTIONS.length > 0 && (
+      {/* Featured Creators */}
+      {featuredCreators.length > 0 && (
         <motion.section
           className="home-section"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           <div className="home-section-header">
-            <BookOpen size={20} className="home-section-icon" />
-            <h2>{t('home.collections')}</h2>
+            <Users size={20} className="home-section-icon home-section-icon--creators" />
+            <h2>{t('home.featuredCreators')}</h2>
           </div>
           <div className="home-section-scroll">
-            {COLLECTIONS.map(col => (
-              <CollectionCard key={col.id} collection={col} works={allWorks} />
+            {featuredCreators.map((creator) => (
+              <Link
+                key={creator.userId}
+                to={`/profile/${creator.userId}`}
+                className="creator-card"
+              >
+                <div className="creator-card-avatar">
+                  {creator.profile?.avatar_url ? (
+                    <img src={creator.profile.avatar_url} alt="" />
+                  ) : (
+                    <span>{(creator.profile?.username || '?')[0].toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="creator-card-info">
+                  <span className="creator-card-name">{creator.profile?.username || t('common.anonymous')}</span>
+                  <span className="creator-card-stats">
+                    {t('home.worksCount', { n: creator.workCount })}
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </motion.section>
       )}
 
-      {/* Sort + Grid */}
+      {/* Explore CTA */}
       <motion.div
-        className="home-sort"
-        initial={{ opacity: 0, y: 10 }}
+        className="home-explore-cta"
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
       >
-        <button className={`home-sort-btn ${sort === 'latest' ? 'home-sort-btn--active' : ''}`} onClick={() => handleSortChange('latest')}>
-          <Clock size={16} /> {t('home.sortLatest')}
-        </button>
-        <button className={`home-sort-btn ${sort === 'popular' ? 'home-sort-btn--active' : ''}`} onClick={() => handleSortChange('popular')}>
-          <TrendingUp size={16} /> {t('home.sortPopular')}
-        </button>
+        <Link to="/explore" className="home-explore-btn">
+          <span>{t('home.browseAll')}</span>
+          <ArrowRight size={16} />
+        </Link>
       </motion.div>
-
-      <div className="home-content">
-        {works.length > 0 ? (
-          <div className="home-grid">
-            {works.map((work, index) => (
-              <WorkCard key={work.id} work={work} index={index} />
-            ))}
-          </div>
-        ) : !loading ? (
-          <div className="home-empty"><p>{t('home.empty')}</p></div>
-        ) : null}
-
-        {loading && (
-          <div className="home-loading">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="home-skeleton">
-                <div className="skeleton home-skeleton-image" />
-                <div className="home-skeleton-info">
-                  <div className="skeleton home-skeleton-title" />
-                  <div className="skeleton home-skeleton-text" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!loading && hasMore && works.length > 0 && (
-          <div className="home-load-more">
-            <motion.button className="home-load-more-btn" onClick={handleLoadMore} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              {t('home.loadMore')}
-            </motion.button>
-          </div>
-        )}
-      </div>
     </div>
   )
 }

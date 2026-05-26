@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, LogOut, User, Sun, Moon } from 'lucide-react'
+import { Plus, LogOut, User, Sun, Moon, Compass } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
 import { useLanguage } from '../../hooks/useLanguage'
@@ -56,9 +56,15 @@ function Navbar() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
       <div className="navbar-inner">
-        <Link to="/" className="navbar-logo">
-          <span className="gradient-text">Vibe Coding</span>
-        </Link>
+        <div className="navbar-left">
+          <Link to="/" className="navbar-logo">
+            <span className="gradient-text">Vibe Coding</span>
+          </Link>
+          <Link to="/explore" className="navbar-explore-link">
+            <Compass size={16} />
+            <span>{t('navbar.explore')}</span>
+          </Link>
+        </div>
 
         <div className="navbar-actions">
           <button className="navbar-theme-btn" onClick={toggleTheme} title={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}>

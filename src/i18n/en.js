@@ -18,6 +18,7 @@ const en = {
   'navbar.user': 'User',
   'navbar.themeToLight': 'Switch to light mode',
   'navbar.themeToDark': 'Switch to dark mode',
+  'navbar.explore': 'Explore',
 
   // Home
   'home.heroTagline': 'The Home of AI Creators',
@@ -71,6 +72,10 @@ const en = {
   'auth.stepClickResetLink': 'Open your email and click the reset link',
   'auth.stepSetNewPassword': 'Set a new password',
   'auth.stepReturnLogin2': 'Return to log in',
+  'auth.confirmSuccess': 'Email Verified!',
+  'auth.confirmSubtitle': 'Your email has been confirmed. You can now log in.',
+  'auth.confirmAutoLogin': 'Auto-logging in, redirecting to home...',
+  'auth.confirmProcessing': 'Verifying...',
 
   // Publish
   'publish.noAuth': 'Please log in before publishing',
@@ -299,6 +304,30 @@ const en = {
   'home.webDesktop': 'Web & Desktop',
   'home.latestDrops': 'Latest Drops',
   'home.platformFilter': 'Platform',
+  'home.browseAll': 'Browse All Works',
+  'home.trendingThisWeek': 'Trending This Week',
+  'home.featuredCreators': 'Featured Creators',
+  'home.viewProfile': 'View Profile',
+  'home.worksCount': '{n} works',
+
+  // Explore
+  'explore.title': 'Explore',
+  'explore.subtitle': 'Browse all works',
+  'explore.search': 'Search works...',
+  'explore.filterCategory': 'Category',
+  'explore.filterPlatform': 'Platform',
+  'explore.filterTool': 'AI Tool',
+  'explore.filterSort': 'Sort by',
+  'explore.empty': 'No works found',
+
+  // Content categories
+  'category.showcase': 'Showcase',
+  'category.product': 'Product',
+  'category.experimental': 'Experimental',
+
+  // Publish category
+  'publish.category': 'Category',
+  'publish.categoryHint': 'Select a category',
 }
 
 export default en
