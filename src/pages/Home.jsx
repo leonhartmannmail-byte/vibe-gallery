@@ -1,91 +1,125 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Sparkles, Flame, ArrowRight, Terminal, Bot, Zap, Cpu, Plug, Rocket, Eye, FlaskConical, Star, Users } from 'lucide-react'
+import { Sparkles, Flame, ArrowRight, Terminal, Bot, Zap, Cpu, Rocket, Eye, FlaskConical, Star, Trophy, Smartphone, Monitor, Globe, Wind } from 'lucide-react'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
 import { sbQuery } from '../lib/supabase'
 import BentoGrid from '../components/BentoGrid/BentoGrid'
 import WorkCard from '../components/WorkCard/WorkCard'
+import FilterBar from '../components/FilterBar/FilterBar'
 import GridBackground from '../components/Background/GridBackground'
 import SplashCursor from '../components/SplashCursor/SplashCursor'
 import { FEATURED_WORK_IDS } from '../config/featured'
 import './Home.css'
 
 const trendingTags = [
-  { label: 'CursorBuild', tag: 'CursorBuild', icon: Terminal },
-  { label: 'ClaudeCode', tag: 'ClaudeCode', icon: Bot },
-  { label: 'OnePrompt', tag: 'OnePrompt', icon: Zap },
-  { label: 'AIWorkflow', tag: 'AIWorkflow', icon: Zap },
-  { label: 'Agent', tag: 'Agent', icon: Cpu },
-  { label: 'MCP', tag: 'MCP', icon: Plug },
-  { label: 'SideProject', tag: 'SideProject', icon: Rocket },
-  { label: 'BuildInPublic', tag: 'BuildInPublic', icon: Eye },
-  { label: 'Experimental', tag: 'Experimental', icon: FlaskConical },
-  { label: 'AIApps', tag: 'AIApps', icon: Sparkles },
+  { tag: 'AIBuild', icon: Sparkles },
+  { tag: 'AgentWorkflow', icon: Bot },
+  { tag: 'PromptBuild', icon: Zap },
+  { tag: 'CursorBuild', icon: Terminal },
+  { tag: 'ClaudeCode', icon: Bot },
+  { tag: 'MobileApp', icon: Smartphone },
+  { tag: 'WebApp', icon: Globe },
+  { tag: 'BuildInPublic', icon: Eye },
+  { tag: 'Experimental', icon: FlaskConical },
+  { tag: 'SideProject', icon: Rocket },
 ]
 
+const TOOL_TABS = ['Cursor', 'Claude Code', 'Codex', 'Windsurf', 'Aider']
+const TOOL_ICONS = { Cursor: Terminal, 'Claude Code': Bot, Codex: Zap, Windsurf: Wind, Aider: Cpu }
+
+const PLATFORM_TABS = [
+  { value: 'mobile', icon: Smartphone, label: { zh: 'Mobile Apps', en: 'Mobile Apps' } },
+  { value: 'web', icon: Monitor, label: { zh: 'Web & Desktop', en: 'Web & Desktop' } },
+]
+
+const RANK_ICONS = [Trophy, Star, Star]
+
+async function enrichWithProfiles(works) {
+  if (!works || works.length === 0) return []
+  const userIds = [...new Set(works.map(w => w.user_id))]
+  if (!userIds.length) return works
+  const profiles = await sbQuery('profiles', {
+    params: `?select=id,username,avatar_url&id=in.(${userIds.join(',')})`
+  })
+  const map = {}
+  profiles?.forEach(p => { map[p.id] = p })
+  return works.map(w => ({ ...w, profiles: map[w.user_id] || null }))
+}
+
 function Home() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const { fetchWorksByIds } = useWorks()
+  const lang = locale === 'en' ? 'en' : 'zh'
+
   const [bentoWorks, setBentoWorks] = useState([])
+  const [platformWorks, setPlatformWorks] = useState({ mobile: [], web: [] })
+  const [toolWorks, setToolWorks] = useState({})
   const [trendingWorks, setTrendingWorks] = useState([])
-  const [featuredCreators, setFeaturedCreators] = useState([])
+  const [topCreators, setTopCreators] = useState([])
+  const [activePlatform, setActivePlatform] = useState('mobile')
+  const [activeTool, setActiveTool] = useState('Claude Code')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        // Bento works
-        let works = []
+        // 1. Featured works
+        let featured = []
         if (FEATURED_WORK_IDS.length > 0) {
-          works = await fetchWorksByIds(FEATURED_WORK_IDS)
+          featured = await fetchWorksByIds(FEATURED_WORK_IDS)
         }
-        if (works.length === 0) {
+        if (featured.length === 0) {
           const data = await sbQuery('works', {
             params: '?select=*&order=likes_count.desc&limit=6'
           })
-          const userIds = [...new Set((data || []).map(w => w.user_id))]
-          if (userIds.length) {
-            const profiles = await sbQuery('profiles', {
-              params: `?select=id,username,avatar_url&id=in.(${userIds.join(',')})`
-            })
-            const profileMap = {}
-            profiles?.forEach(p => { profileMap[p.id] = p })
-            works = (data || []).map(w => ({ ...w, profiles: profileMap[w.user_id] || null }))
-          } else {
-            works = data || []
-          }
+          featured = await enrichWithProfiles(data)
         }
-        setBentoWorks(works)
+        setBentoWorks(featured)
 
-        // Trending this week (parallel)
+        // Parallel queries
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
-        const [trendingData, allWorksLite] = await Promise.all([
+        const [mobileData, webData, trendingData, allWorksLite] = await Promise.all([
+          sbQuery('works', { params: '?select=*&platform=eq.mobile&order=likes_count.desc&limit=4' }),
+          sbQuery('works', { params: '?select=*&platform=eq.web&order=likes_count.desc&limit=4' }),
           sbQuery('works', {
             params: `?select=*&created_at=gte.${sevenDaysAgo}&order=likes_count.desc&limit=8`
           }),
           sbQuery('works', { params: '?select=user_id,likes_count' }),
         ])
 
-        // Trending: fallback to top works if < 3 in last 7 days
+        // 2. Platform works
+        setPlatformWorks({
+          mobile: await enrichWithProfiles(mobileData),
+          web: await enrichWithProfiles(webData),
+        })
+
+        // 3. Tool works (query top 5 tools)
+        const toolResults = await Promise.all(
+          TOOL_TABS.map(tool =>
+            sbQuery('works', {
+              params: `?select=*&ai_tools=cs.{"${tool}"}&order=likes_count.desc&limit=4`
+            })
+          )
+        )
+        const toolMap = {}
+        for (let i = 0; i < TOOL_TABS.length; i++) {
+          toolMap[TOOL_TABS[i]] = await enrichWithProfiles(toolResults[i])
+        }
+        setToolWorks(toolMap)
+
+        // 4. Trending this week
         let trending = trendingData || []
         if (trending.length < 3) {
-          trending = await sbQuery('works', {
+          const fallback = await sbQuery('works', {
             params: '?select=*&order=likes_count.desc&limit=8'
-          }) || []
-        }
-        if (trending.length) {
-          const tUserIds = [...new Set(trending.map(w => w.user_id))]
-          const tProfiles = await sbQuery('profiles', {
-            params: `?select=id,username,avatar_url&id=in.(${tUserIds.join(',')})`
           })
-          const tMap = {}
-          tProfiles?.forEach(p => { tMap[p.id] = p })
-          setTrendingWorks(trending.map(w => ({ ...w, profiles: tMap[w.user_id] || null })))
+          trending = fallback || []
         }
+        setTrendingWorks(await enrichWithProfiles(trending))
 
-        // Featured Creators: aggregate by user_id
+        // 5. Top Creators
         if (allWorksLite) {
           const creatorMap = {}
           allWorksLite.forEach(w => {
@@ -95,19 +129,18 @@ function Home() {
             creatorMap[w.user_id].workCount++
             creatorMap[w.user_id].totalLikes += (w.likes_count || 0)
           })
-          const topCreators = Object.values(creatorMap)
+          const top = Object.values(creatorMap)
             .sort((a, b) => b.totalLikes - a.totalLikes)
-            .slice(0, 6)
-          if (topCreators.length) {
-            const cIds = topCreators.map(c => c.userId)
+            .slice(0, 5)
+          if (top.length) {
+            const cIds = top.map(c => c.userId)
             const cProfiles = await sbQuery('profiles', {
               params: `?select=id,username,avatar_url,bio&id=in.(${cIds.join(',')})`
             })
-            const enriched = topCreators.map(c => ({
+            setTopCreators(top.map(c => ({
               ...c,
               profile: cProfiles?.find(p => p.id === c.userId) || null,
-            }))
-            setFeaturedCreators(enriched)
+            })))
           }
         }
       } catch (err) {
@@ -118,6 +151,10 @@ function Home() {
     }
     load()
   }, [fetchWorksByIds])
+
+  const mobileWorks = platformWorks.mobile
+  const webWorks = platformWorks.web
+  const currentToolWorks = toolWorks[activeTool] || []
 
   return (
     <div className="home-page">
@@ -139,9 +176,9 @@ function Home() {
       {/* Hero */}
       <motion.section
         className="home-hero"
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <div className="home-hero-tagline">
           <Sparkles size={12} />
@@ -154,46 +191,53 @@ function Home() {
         <p className="home-hero-subtitle">{t('home.subtitle')}</p>
         <Link to="/publish" className="home-hero-cta">
           <span>{t('home.heroCta')}</span>
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </Link>
       </motion.section>
+
+      {/* Filter Bar */}
+      <motion.div
+        className="home-filter-wrapper"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.15 }}
+      >
+        <FilterBar />
+      </motion.div>
 
       {/* Trending Tags */}
       <motion.section
         className="home-trending"
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
       >
         <div className="home-trending-header">
           <Flame size={14} className="home-trending-icon" />
-          <span>{t('home.trending')}</span>
+          <span>{t('home.trendingNow')}</span>
         </div>
         <div className="home-trending-scroll">
-          {trendingTags.map(({ label, tag, icon: Icon }) => (
-            <Link
-              key={tag}
-              to={`/tag/${tag}`}
-              className="home-tag"
-            >
+          {trendingTags.map(({ tag, icon: Icon }) => (
+            <Link key={tag} to={`/tag/${tag}`} className="home-tag">
               <Icon size={12} />
-              <span>{label}</span>
+              <span>{tag}</span>
             </Link>
           ))}
         </div>
       </motion.section>
 
-      {/* Bento Grid — Featured / Trending */}
+      {/* Featured Works — BentoGrid */}
       {bentoWorks.length > 0 && (
         <motion.section
           className="home-bento-section"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
         >
           <div className="home-section-header">
             <Star size={20} className="home-section-icon" />
             <h2>{t('home.featured')}</h2>
+            <span className="home-section-subtitle">{t('home.editorPicks')}</span>
           </div>
           <BentoGrid works={bentoWorks} />
         </motion.section>
@@ -213,11 +257,98 @@ function Home() {
         </div>
       )}
 
+      {/* By Platform */}
+      {(mobileWorks.length > 0 || webWorks.length > 0) && (
+        <motion.section
+          className="home-section home-section--tabbed"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <div className="home-section-header">
+            <Globe size={20} className="home-section-icon home-section-icon--platform" />
+            <h2>{t('home.sectionByPlatform')}</h2>
+          </div>
+          <div className="home-section-tabs">
+            {PLATFORM_TABS.map(tab => {
+              const works = tab.value === 'mobile' ? mobileWorks : webWorks
+              if (works.length === 0) return null
+              return (
+                <button
+                  key={tab.value}
+                  className={`home-section-tab ${activePlatform === tab.value ? 'active' : ''}`}
+                  onClick={() => setActivePlatform(tab.value)}
+                >
+                  <tab.icon size={14} />
+                  <span>{tab.label[lang]}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="home-section-grid">
+            {(activePlatform === 'mobile' ? mobileWorks : webWorks).slice(0, 4).map((work, i) => (
+              <div key={work.id} className="home-section-grid-item">
+                <WorkCard work={work} index={i} />
+              </div>
+            ))}
+          </div>
+          <div className="home-section-footer">
+            <Link to={`/explore?platform=${activePlatform}`} className="home-section-view-all">
+              {t('home.viewAll')} <ArrowRight size={14} />
+            </Link>
+          </div>
+        </motion.section>
+      )}
+
+      {/* By Tool */}
+      {Object.values(toolWorks).some(w => w.length > 0) && (
+        <motion.section
+          className="home-section home-section--tabbed"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+        >
+          <div className="home-section-header">
+            <Terminal size={20} className="home-section-icon home-section-icon--tool" />
+            <h2>{t('home.sectionByTool')}</h2>
+          </div>
+          <div className="home-section-tabs">
+            {TOOL_TABS.map(tool => {
+              const works = toolWorks[tool] || []
+              if (works.length === 0) return null
+              const Icon = TOOL_ICONS[tool] || Terminal
+              return (
+                <button
+                  key={tool}
+                  className={`home-section-tab ${activeTool === tool ? 'active' : ''}`}
+                  onClick={() => setActiveTool(tool)}
+                >
+                  <Icon size={14} />
+                  <span>{tool}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="home-section-grid">
+            {currentToolWorks.slice(0, 4).map((work, i) => (
+              <div key={work.id} className="home-section-grid-item">
+                <WorkCard work={work} index={i} />
+              </div>
+            ))}
+          </div>
+          <div className="home-section-footer">
+            <Link to={`/explore?tool=${encodeURIComponent(activeTool)}`} className="home-section-view-all">
+              {t('home.viewAll')} <ArrowRight size={14} />
+            </Link>
+          </div>
+        </motion.section>
+      )}
+
       {/* Trending This Week */}
       {trendingWorks.length > 0 && (
         <motion.section
           className="home-section"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
@@ -238,36 +369,39 @@ function Home() {
         </motion.section>
       )}
 
-      {/* Featured Creators */}
-      {featuredCreators.length > 0 && (
+      {/* Top Creators — Leaderboard */}
+      {topCreators.length > 0 && (
         <motion.section
-          className="home-section"
-          initial={{ opacity: 0, y: 20 }}
+          className="home-section home-section--creators"
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.45 }}
         >
           <div className="home-section-header">
-            <Users size={20} className="home-section-icon home-section-icon--creators" />
-            <h2>{t('home.featuredCreators')}</h2>
+            <Trophy size={20} className="home-section-icon home-section-icon--creators" />
+            <h2>{t('home.topCreators')}</h2>
           </div>
-          <div className="home-section-scroll">
-            {featuredCreators.map((creator) => (
+          <div className="creator-leaderboard">
+            {topCreators.map((creator, i) => (
               <Link
                 key={creator.userId}
                 to={`/profile/${creator.userId}`}
-                className="creator-card"
+                className="creator-rank-row"
               >
-                <div className="creator-card-avatar">
+                <span className={`creator-rank-num creator-rank-num--${i + 1}`}>
+                  {i < 3 ? (() => { const I = RANK_ICONS[i]; return <I size={16} /> })() : `#${i + 1}`}
+                </span>
+                <div className="creator-rank-avatar">
                   {creator.profile?.avatar_url ? (
                     <img src={creator.profile.avatar_url} alt="" />
                   ) : (
                     <span>{(creator.profile?.username || '?')[0].toUpperCase()}</span>
                   )}
                 </div>
-                <div className="creator-card-info">
-                  <span className="creator-card-name">{creator.profile?.username || t('common.anonymous')}</span>
-                  <span className="creator-card-stats">
-                    {t('home.worksCount', { n: creator.workCount })}
+                <div className="creator-rank-info">
+                  <span className="creator-rank-name">{creator.profile?.username || t('common.anonymous')}</span>
+                  <span className="creator-rank-meta">
+                    {t('home.worksCount', { n: creator.workCount })} · {creator.totalLikes} {t('home.totalLikes')}
                   </span>
                 </div>
               </Link>
@@ -279,9 +413,9 @@ function Home() {
       {/* Explore CTA */}
       <motion.div
         className="home-explore-cta"
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
       >
         <Link to="/explore" className="home-explore-btn">
           <span>{t('home.browseAll')}</span>
