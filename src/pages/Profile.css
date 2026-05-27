@@ -30,7 +30,8 @@
   align-items: center;
   justify-content: center;
   margin-bottom: var(--space-4);
-  border: 3px solid var(--border-color);
+  position: relative;
+  cursor: pointer;
 }
 
 .profile-avatar-large img {
@@ -43,6 +44,42 @@
   font-size: var(--text-4xl);
   font-weight: 700;
   color: var(--btn-text);
+}
+
+.profile-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 50%;
+}
+
+.profile-avatar-large:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+
+.profile-avatar-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.profile-avatar-input {
+  display: none;
+}
+
+.profile-avatar-error {
+  font-size: var(--text-xs);
+  color: var(--accent-like);
+  margin-bottom: var(--space-2);
 }
 
 .profile-username {

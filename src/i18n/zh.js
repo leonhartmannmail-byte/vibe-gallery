@@ -139,6 +139,14 @@ const zh = {
   'profile.loading': '加载中...',
   'profile.emptyOwn': '还没有发布作品，快去发布第一个吧！',
   'profile.emptyOther': '该用户还没有发布作品',
+  'profile.avatarTooLarge': '头像大小不能超过 2MB',
+  'profile.avatarUploadFailed': '头像上传失败，请重试',
+  'profile.avatarSaveFailed': '头像保存失败，请重试',
+  'profile.cropTitle': '裁切头像',
+  'profile.cropConfirm': '确认',
+  'profile.cropCancel': '取消',
+  'profile.cropPreviewSquare': '方形',
+  'profile.cropPreviewCircle': '圆形',
 
   // EditWork
   'editWork.title': '编辑作品',

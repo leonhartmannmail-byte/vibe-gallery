@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Calendar, Edit3 } from 'lucide-react'
-import { sbQuery } from '../lib/supabase'
+import { Calendar, Edit3, Camera, Loader2 } from 'lucide-react'
+import { sbQuery, uploadAvatar } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
 import WorkCard from '../components/WorkCard/WorkCard'
+import AvatarCropper from '../components/AvatarCropper/AvatarCropper'
 import './Profile.css'
+
+const AVATAR_MAX_SIZE = 2 * 1024 * 1024 // 2MB
+const AVATAR_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif'
 
 function Profile() {
   const { id } = useParams()
@@ -18,6 +22,10 @@ function Profile() {
   const [profileLoading, setProfileLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [bio, setBio] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
+  const [cropFile, setCropFile] = useState(null)
+  const fileInputRef = useRef(null)
 
   const isOwn = user?.id === id
 
@@ -54,6 +62,39 @@ function Profile() {
     }
   }
 
+  function handleAvatarChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarError('')
+
+    if (file.size > AVATAR_MAX_SIZE) {
+      setAvatarError(t('profile.avatarTooLarge'))
+      return
+    }
+
+    setCropFile(file)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handleCropConfirm(blob) {
+    setCropFile(null)
+    setUploadingAvatar(true)
+    try {
+      const croppedFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
+      const url = await uploadAvatar(croppedFile, user.id)
+      const { error } = await updateProfile({ avatar_url: url })
+      if (!error) {
+        setProfile({ ...profile, avatar_url: url })
+      } else {
+        setAvatarError(t('profile.avatarSaveFailed'))
+      }
+    } catch {
+      setAvatarError(t('profile.avatarUploadFailed'))
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
   // works 已通过 userId 参数服务端过滤
   const userWorks = works
 
@@ -87,13 +128,41 @@ function Profile() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="profile-avatar-large">
+        <div className="profile-avatar-large" onClick={() => isOwn && fileInputRef.current?.click()}>
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="" />
           ) : (
             <span>{(profile.username || '?')[0].toUpperCase()}</span>
           )}
+          {isOwn && (
+            <div className="profile-avatar-overlay">
+              {uploadingAvatar ? (
+                <Loader2 size={18} className="profile-avatar-spinner" />
+              ) : (
+                <Camera size={18} />
+              )}
+            </div>
+          )}
         </div>
+        {isOwn && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={AVATAR_ACCEPT}
+            onChange={handleAvatarChange}
+            className="profile-avatar-input"
+          />
+        )}
+        {avatarError && <p className="profile-avatar-error">{avatarError}</p>}
+
+        {cropFile && (
+          <AvatarCropper
+            file={cropFile}
+            onConfirm={handleCropConfirm}
+            onCancel={() => setCropFile(null)}
+            t={t}
+          />
+        )}
 
         <h1 className="profile-username">{profile.username}</h1>
 

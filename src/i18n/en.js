@@ -139,6 +139,14 @@ const en = {
   'profile.loading': 'Loading...',
   'profile.emptyOwn': 'No works published yet. Share your first work!',
   'profile.emptyOther': 'This user hasn\'t published any works yet',
+  'profile.avatarTooLarge': 'Avatar size cannot exceed 2MB',
+  'profile.avatarUploadFailed': 'Avatar upload failed, please try again',
+  'profile.avatarSaveFailed': 'Failed to save avatar, please try again',
+  'profile.cropTitle': 'Crop Avatar',
+  'profile.cropConfirm': 'Confirm',
+  'profile.cropCancel': 'Cancel',
+  'profile.cropPreviewSquare': 'Square',
+  'profile.cropPreviewCircle': 'Circle',
 
   // EditWork
   'editWork.title': 'Edit Work',
