@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Sparkles, Flame, ArrowRight, Terminal, Bot, Zap, Rocket, Eye, FlaskConical, Star, Trophy, Smartphone, Monitor, Globe } from 'lucide-react'
+import { Sparkles, Flame, ArrowRight, Bot, Zap, Rocket, Eye, FlaskConical, Star, Trophy, Smartphone, Monitor, Globe } from 'lucide-react'
+import { Cursor as LobeCursor, ClaudeCode as LobeClaudeCode } from '@lobehub/icons'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
 import { sbQuery } from '../lib/supabase'
@@ -17,8 +18,8 @@ const trendingTags = [
   { tag: 'AIBuild', icon: Sparkles },
   { tag: 'AgentWorkflow', icon: Bot },
   { tag: 'PromptBuild', icon: Zap },
-  { tag: 'CursorBuild', icon: Terminal },
-  { tag: 'ClaudeCode', icon: Bot },
+  { tag: 'CursorBuild', icon: LobeCursor },
+  { tag: 'ClaudeCode', icon: LobeClaudeCode },
   { tag: 'MobileApp', icon: Smartphone },
   { tag: 'WebApp', icon: Globe },
   { tag: 'BuildInPublic', icon: Eye },

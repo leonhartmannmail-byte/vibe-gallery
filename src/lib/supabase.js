@@ -77,3 +77,31 @@ export async function sbQuery(table, { method = 'GET', params = '', body = null 
   const text = await res.text()
   return text ? JSON.parse(text) : null
 }
+
+// 分页获取所有记录（绕过 Supabase 默认 1000 条限制）
+export async function sbQueryAll(table, { params = '', pageSize = 1000 } = {}) {
+  const token = getLocalToken() || supabaseAnonKey
+  const allItems = []
+  let offset = 0
+
+  while (true) {
+    const headers = {
+      'apikey': supabaseAnonKey,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Range': `${offset}-${offset + pageSize - 1}`,
+      'Prefer': 'count=exact'
+    }
+
+    const res = await fetch(`${supabaseUrl}/rest/v1/${table}${params}`, { headers })
+    if (!res.ok) break
+
+    const data = await res.json()
+    if (!data.length) break
+    allItems.push(...data)
+    if (data.length < pageSize) break
+    offset += pageSize
+  }
+
+  return allItems
+}

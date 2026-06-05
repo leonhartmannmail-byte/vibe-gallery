@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { Smartphone, Monitor, Terminal, Bot, Zap, Cpu, Wind } from 'lucide-react'
+import { Smartphone, Monitor, Cpu } from 'lucide-react'
 import { useLanguage } from '../../hooks/useLanguage'
+import { getToolIcon } from '../../utils/lobeIcons'
 import './FilterBar.css'
 
 const PLATFORM_FILTERS = [
@@ -9,11 +10,11 @@ const PLATFORM_FILTERS = [
 ]
 
 const TOOL_FILTERS = [
-  { value: 'Cursor', icon: Terminal },
-  { value: 'Claude Code', icon: Bot },
-  { value: 'Codex', icon: Zap },
-  { value: 'Windsurf', icon: Wind },
-  { value: 'Aider', icon: Cpu },
+  { value: 'Cursor' },
+  { value: 'Claude Code' },
+  { value: 'Codex' },
+  { value: 'Windsurf' },
+  { value: 'Aider', fallbackIcon: Cpu },
 ]
 
 function FilterBar() {
@@ -49,16 +50,20 @@ function FilterBar() {
       <div className="filter-bar-group">
         <span className="filter-bar-label">{t('home.filterTool')}</span>
         <div className="filter-bar-pills">
-          {TOOL_FILTERS.map(tool => (
-            <button
-              key={tool.value}
-              className="filter-bar-pill"
-              onClick={() => goExplore({ tool: tool.value })}
-            >
-              <tool.icon size={14} />
-              <span>{tool.value}</span>
-            </button>
-          ))}
+          {TOOL_FILTERS.map(tool => {
+            const LobeIcon = getToolIcon(tool.value)
+            const IconComp = LobeIcon || tool.fallbackIcon
+            return (
+              <button
+                key={tool.value}
+                className="filter-bar-pill"
+                onClick={() => goExplore({ tool: tool.value })}
+              >
+                {IconComp && <IconComp size={14} />}
+                <span>{tool.value}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

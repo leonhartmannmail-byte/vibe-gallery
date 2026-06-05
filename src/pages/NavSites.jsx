@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Compass, Search, ExternalLink } from 'lucide-react'
 import { sbQuery } from '../lib/supabase'
+import { getBrandIcon } from '../utils/lobeIcons'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
@@ -13,7 +14,7 @@ function NavSites() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    sbQuery('nav_sites', { params: '?select=*&is_active=eq.true&order=sort_order.asc' })
+    sbQuery('nav_sites', { params: '?select=*&is_active=eq.true&order=sort_order.asc&limit=10000' })
       .then(data => {
         const list = data || []
         setItems(list)
@@ -67,7 +68,7 @@ function NavSites() {
               <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className="listing-card" style={{ animationDelay: `${i * 0.03}s` }}>
                 {item.is_recommended && <div className="listing-card-badge">推荐</div>}
                 <div className="listing-card-icon">
-                  {item.icon_url ? <img src={item.icon_url} alt="" /> : <span>{item.name[0]}</span>}
+                  {item.icon_url ? <img src={item.icon_url} alt="" /> : (() => { const BIcon = getBrandIcon(item.name); return BIcon ? <BIcon size={28} /> : <span>{item.name[0]}</span> })()}
                 </div>
                 <div className="listing-card-body">
                   <div className="listing-card-name">{item.name} <ExternalLink size={11} className="listing-card-ext" /></div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Compass, MessageSquare, Server, Wrench, ArrowRight, ExternalLink } from 'lucide-react'
 import { sbQuery } from '../../lib/supabase'
+import { getBrandIcon } from '../../utils/lobeIcons'
 import './HomeModules.css'
 
 // ====== 导航网站推荐 ======
@@ -46,7 +47,7 @@ export function NavSitesSection({ delay = 0.5 }) {
               {site.icon_url ? (
                 <img src={site.icon_url} alt="" />
               ) : (
-                <span>{site.name[0]}</span>
+                (() => { const BrandIcon = getBrandIcon(site.name); return BrandIcon ? <BrandIcon size={24} /> : <span>{site.name[0]}</span> })()
               )}
             </div>
             <div className="home-module-card-body">
@@ -105,7 +106,7 @@ export function PromptsSection({ delay = 0.55 }) {
               {prompt.content && (
                 <div className="home-module-card-content">{prompt.content}</div>
               )}
-              <div className="home-module-card-tag">{prompt.category}</div>
+              <div className="home-module-card-tag">{prompt.category?.split(',')[0].trim()}</div>
             </div>
           </Link>
         ))}
@@ -150,12 +151,12 @@ export function McpSection({ delay = 0.6 }) {
           >
             {server.is_recommended && <div className="home-module-card-recommended">推荐</div>}
             <div className="home-module-card-icon home-module-card-icon--mcp">
-              <Server size={16} />
+              {(() => { const BIcon = getBrandIcon(server.name); return BIcon ? <BIcon size={20} /> : <Server size={16} /> })()}
             </div>
             <div className="home-module-card-body">
               <div className="home-module-card-name">{server.name}</div>
               <div className="home-module-card-desc">{server.description}</div>
-              <div className="home-module-card-tag">{server.category}</div>
+              <div className="home-module-card-tag">{server.category?.split(',')[0].trim()}</div>
             </div>
           </Link>
         ))}

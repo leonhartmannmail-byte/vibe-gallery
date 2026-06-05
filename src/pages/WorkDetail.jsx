@@ -7,6 +7,7 @@ import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
 import { getWorkMetadata } from '../utils/workMetadata'
 import { getToolConfig, getModelConfig } from '../config/enums'
+import { getToolIcon, getModelIcon } from '../utils/lobeIcons'
 import LikeButton from '../components/LikeButton/LikeButton'
 import CommentSection from '../components/CommentSection/CommentSection'
 import WorkCard from '../components/WorkCard/WorkCard'
@@ -282,8 +283,10 @@ function WorkDetail() {
               <div className="work-detail-tool-badges">
                 {work.ai_tools.map(tool => {
                   const config = getToolConfig(tool)
+                  const ToolIcon = getToolIcon(tool)
                   return (
                     <span key={tool} className="work-detail-tool-badge" style={{ color: config.color, borderColor: `${config.color}30` }}>
+                      {ToolIcon && <ToolIcon size={12} />}
                       {config.label}
                     </span>
                   )
@@ -299,8 +302,10 @@ function WorkDetail() {
               <div className="work-detail-tool-badges">
                 {work.ai_models.map(model => {
                   const config = getModelConfig(model)
+                  const ModelIcon = getModelIcon(model)
                   return (
                     <span key={model} className="work-detail-tool-badge" style={{ color: config.color, borderColor: `${config.color}30` }}>
+                      {ModelIcon && <ModelIcon size={12} />}
                       {config.label}
                     </span>
                   )

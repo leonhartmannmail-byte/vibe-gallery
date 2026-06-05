@@ -5,6 +5,7 @@ import { Heart, MessageCircle, ArrowRight, Star, Award, TrendingUp, Sparkles, Fl
 import { useLanguage } from '../../hooks/useLanguage'
 import { getWorkBadge, formatCount } from '../../utils/badges'
 import { getToolConfig } from '../../config/enums'
+import { getToolIcon } from '../../utils/lobeIcons'
 import './WorkCard.css'
 
 const BADGE_ICONS = { Star, Award, TrendingUp, Sparkles, Flame }
@@ -123,8 +124,10 @@ function WorkCard({ work, index = 0, layout = 'grid' }) {
             <div className="work-card-tools">
               {tools.map(tool => {
                 const config = getToolConfig(tool)
+                const ToolIcon = getToolIcon(tool)
                 return (
                   <span key={tool} className="work-card-tool-badge" style={{ color: config.color, borderColor: `${config.color}30` }}>
+                    {ToolIcon && <ToolIcon size={12} />}
                     {config.label}
                   </span>
                 )

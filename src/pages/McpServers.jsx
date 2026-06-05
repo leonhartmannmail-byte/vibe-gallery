@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Server, Search, ExternalLink } from 'lucide-react'
-import { sbQuery } from '../lib/supabase'
+import { sbQuery, sbQueryAll } from '../lib/supabase'
+import { getBrandIcon } from '../utils/lobeIcons'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
@@ -14,11 +15,15 @@ function McpServers() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    sbQuery('mcp_servers', { params: '?select=*&is_active=eq.true&order=sort_order.asc' })
+    sbQueryAll('mcp_servers', { params: '?select=*&is_active=eq.true&order=sort_order.asc' })
       .then(data => {
-        const list = data || []
+        const list = (data || []).map(item => ({
+          ...item,
+          // Extract first category from comma-separated string
+          mainCategory: item.category ? item.category.split(',')[0].trim() : ''
+        }))
         setItems(list)
-        const cats = [...new Set(list.map(i => i.category).filter(Boolean))]
+        const cats = [...new Set(list.map(i => i.mainCategory).filter(Boolean))]
         setCategories(cats)
       })
       .catch(() => {})
@@ -27,7 +32,7 @@ function McpServers() {
 
   const filtered = items.filter(item => {
     const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || item.description?.toLowerCase().includes(search.toLowerCase())
-    const matchCat = activeCategory === 'all' || item.category === activeCategory
+    const matchCat = activeCategory === 'all' || item.mainCategory === activeCategory
     return matchSearch && matchCat
   })
 
@@ -68,14 +73,14 @@ function McpServers() {
               <Link key={item.id} to={`/mcp/${item.id}`} className="listing-card" style={{ animationDelay: `${i * 0.03}s` }}>
                 {item.is_recommended && <div className="listing-card-badge">推荐</div>}
                 <div className="listing-card-icon">
-                  {item.icon_url ? <img src={item.icon_url} alt="" /> : <span>{item.name[0]}</span>}
+                  {item.icon_url ? <img src={item.icon_url} alt="" /> : (() => { const BIcon = getBrandIcon(item.name); return BIcon ? <BIcon size={28} /> : <span>{item.name[0]}</span> })()}
                 </div>
                 <div className="listing-card-body">
                   <div className="listing-card-name">
                     {item.name} {item.url && <ExternalLink size={11} className="listing-card-ext" />}
                   </div>
                   <div className="listing-card-desc">{item.description}</div>
-                  <div className="listing-card-tag">{item.category}</div>
+                  <div className="listing-card-tag">{item.mainCategory}</div>
                 </div>
               </Link>
             ))}
