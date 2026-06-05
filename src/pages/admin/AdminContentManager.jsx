@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown, X, Star } from 'lucide-react'
 import useAdmin from '../../hooks/useAdmin'
 
 function AdminContentManager({ tableName, title, subtitle, fields }) {
@@ -78,6 +78,15 @@ function AdminContentManager({ tableName, title, subtitle, fields }) {
     }
   }
 
+  async function toggleRecommended(item) {
+    try {
+      await updateRow(tableName, item.id, { is_recommended: !item.is_recommended })
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_recommended: !i.is_recommended } : i))
+    } catch (err) {
+      alert('更新推荐状态失败: ' + err.message)
+    }
+  }
+
   async function moveItem(item, direction) {
     const idx = items.findIndex(i => i.id === item.id)
     const newIdx = direction === 'up' ? idx - 1 : idx + 1
@@ -136,13 +145,14 @@ function AdminContentManager({ tableName, title, subtitle, fields }) {
               <th>描述</th>
               <th>分类</th>
               <th>状态</th>
+              <th>推荐</th>
               <th>排序</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={6} className="admin-empty">暂无数据</td></tr>
+              <tr><td colSpan={7} className="admin-empty">暂无数据</td></tr>
             ) : filtered.map((item, idx) => (
               <tr key={item.id}>
                 <td style={{ fontWeight: 500, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -158,6 +168,17 @@ function AdminContentManager({ tableName, title, subtitle, fields }) {
                     onClick={() => toggleActive(item)}
                   >
                     <div className="admin-toggle-knob" />
+                  </button>
+                </td>
+                <td>
+                  <button
+                    className={`admin-toggle admin-toggle--recommended ${item.is_recommended ? 'admin-toggle--active' : ''}`}
+                    onClick={() => toggleRecommended(item)}
+                    title={item.is_recommended ? '取消推荐' : '设为推荐'}
+                  >
+                    <div className="admin-toggle-knob">
+                      <Star size={10} fill={item.is_recommended ? 'currentColor' : 'none'} />
+                    </div>
                   </button>
                 </td>
                 <td>

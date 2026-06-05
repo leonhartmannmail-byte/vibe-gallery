@@ -3,6 +3,9 @@ import { ArrowUp, ArrowDown } from 'lucide-react'
 import useAdmin from '../../hooks/useAdmin'
 
 const MODULE_ICONS = {
+  featured: '\u{2B50}',
+  trending: '\u{1F525}',
+  creators: '\u{1F3C6}',
   nav_sites: '\u{1F9ED}',
   ai_prompts: '\u{1F4AC}',
   mcp_servers: '\u{1F50C}',

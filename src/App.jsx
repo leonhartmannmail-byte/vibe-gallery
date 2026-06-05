@@ -17,6 +17,13 @@ const CollectionDetail = lazy(() => import('./pages/CollectionDetail'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const AuthConfirm = lazy(() => import('./pages/AuthConfirm'))
 const Explore = lazy(() => import('./pages/Explore'))
+const NavSites = lazy(() => import('./pages/NavSites'))
+const Prompts = lazy(() => import('./pages/Prompts'))
+const McpServers = lazy(() => import('./pages/McpServers'))
+const Skills = lazy(() => import('./pages/Skills'))
+const PromptDetail = lazy(() => import('./pages/PromptDetail'))
+const McpServerDetail = lazy(() => import('./pages/McpServerDetail'))
+const SkillDetail = lazy(() => import('./pages/SkillDetail'))
 
 // Admin pages
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
@@ -75,6 +82,13 @@ function App() {
                       <Route path="/tag/:tag" element={<TagPage />} />
                       <Route path="/collection/:id" element={<CollectionDetail />} />
                       <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/nav-sites" element={<NavSites />} />
+                      <Route path="/prompts" element={<Prompts />} />
+                      <Route path="/prompts/:id" element={<PromptDetail />} />
+                      <Route path="/mcp" element={<McpServers />} />
+                      <Route path="/mcp/:id" element={<McpServerDetail />} />
+                      <Route path="/skills" element={<Skills />} />
+                      <Route path="/skills/:id" element={<SkillDetail />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </>

@@ -1,44 +1,31 @@
-/* ========== Home Modules ========== */
-.home-modules-scroll {
-  display: flex;
+/* ========== Home Modules Grid ========== */
+.home-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
 }
 
-.home-modules-scroll::-webkit-scrollbar {
-  height: 4px;
-}
-
-.home-modules-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.home-modules-scroll::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 2px;
-}
-
+/* ========== Card Base ========== */
 .home-module-card {
-  flex: 0 0 220px;
-  background: #18181b;
-  border: 1px solid #27272a;
+  position: relative;
+  background: var(--elevation-card-bg, #18181b);
+  border: 1px solid var(--elevation-card-border, #27272a);
   border-radius: 12px;
   padding: 16px;
   text-decoration: none;
   color: inherit;
   transition: all 0.2s ease;
-  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-a.home-module-card:hover {
-  border-color: rgba(167, 139, 250, 0.3);
-  background: rgba(167, 139, 250, 0.04);
+a.home-module-card:hover,
+.home-module-card--prompt:hover,
+.home-module-card--mcp:hover,
+.home-module-card--skill:hover {
+  border-color: var(--elevation-card-hover-border, rgba(167, 139, 250, 0.3));
+  background: var(--elevation-card-hover-bg, rgba(167, 139, 250, 0.04));
   transform: translateY(-2px);
 }
 
@@ -48,6 +35,28 @@ a.home-module-card:hover {
   cursor: default;
 }
 
+a.home-module-card--prompt,
+a.home-module-card--mcp,
+a.home-module-card--skill {
+  cursor: pointer;
+}
+
+/* ========== Recommended Badge ========== */
+.home-module-card-recommended {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #a78bfa, #818cf8);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  line-height: 1.4;
+  z-index: 1;
+}
+
+/* ========== Card Icon ========== */
 .home-module-card-icon {
   width: 36px;
   height: 36px;
@@ -83,6 +92,7 @@ a.home-module-card:hover {
   color: #4ade80;
 }
 
+/* ========== Card Body ========== */
 .home-module-card-body {
   flex: 1;
   display: flex;
@@ -94,7 +104,7 @@ a.home-module-card:hover {
 .home-module-card-name {
   font-size: 13.5px;
   font-weight: 600;
-  color: #e4e4e7;
+  color: var(--text-primary, #e4e4e7);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -105,7 +115,7 @@ a.home-module-card:hover {
 
 .home-module-card-ext {
   flex-shrink: 0;
-  color: #71717a;
+  color: var(--text-muted, #71717a);
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -116,7 +126,7 @@ a.home-module-card:hover .home-module-card-ext {
 
 .home-module-card-desc {
   font-size: 12px;
-  color: #a1a1aa;
+  color: var(--text-secondary, #a1a1aa);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -126,10 +136,10 @@ a.home-module-card:hover .home-module-card-ext {
 
 .home-module-card-content {
   font-size: 11.5px;
-  color: #71717a;
+  color: var(--text-muted, #71717a);
   line-height: 1.5;
-  background: #09090b;
-  border: 1px solid #27272a;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--elevation-card-border, #27272a);
   border-radius: 6px;
   padding: 8px;
   display: -webkit-box;
@@ -143,15 +153,15 @@ a.home-module-card:hover .home-module-card-ext {
   display: inline-flex;
   align-items: center;
   font-size: 10.5px;
-  color: #71717a;
-  background: #27272a;
+  color: var(--text-muted, #71717a);
+  background: rgba(255, 255, 255, 0.06);
   padding: 2px 8px;
   border-radius: 4px;
   width: fit-content;
   margin-top: auto;
 }
 
-/* Section icon colors */
+/* ========== Section Icon Colors ========== */
 .home-section-icon--nav {
   color: #a78bfa;
 }
@@ -168,8 +178,83 @@ a.home-module-card:hover .home-module-card-ext {
   color: #4ade80;
 }
 
+/* ========== Light Theme Overrides ========== */
+[data-theme="light"] .home-module-card {
+  background: var(--elevation-card-bg, #ffffff);
+  border-color: var(--elevation-card-border, #e4e4e7);
+}
+
+[data-theme="light"] .home-module-card:hover,
+[data-theme="light"] a.home-module-card:hover,
+[data-theme="light"] .home-module-card--prompt:hover,
+[data-theme="light"] .home-module-card--mcp:hover,
+[data-theme="light"] .home-module-card--skill:hover {
+  border-color: var(--elevation-card-hover-border, rgba(167, 139, 250, 0.4));
+  background: var(--elevation-card-hover-bg, rgba(167, 139, 250, 0.06));
+}
+
+[data-theme="light"] .home-module-card-icon {
+  background: rgba(167, 139, 250, 0.08);
+}
+
+[data-theme="light"] .home-module-card-icon span {
+  color: #7c3aed;
+}
+
+[data-theme="light"] .home-module-card-icon--mcp {
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563eb;
+}
+
+[data-theme="light"] .home-module-card-icon--skill {
+  background: rgba(34, 197, 94, 0.08);
+  color: #16a34a;
+}
+
+[data-theme="light"] .home-module-card-name {
+  color: var(--text-primary, #18181b);
+}
+
+[data-theme="light"] .home-module-card-desc {
+  color: var(--text-secondary, #52525b);
+}
+
+[data-theme="light"] .home-module-card-content {
+  color: var(--text-muted, #71717a);
+  background: rgba(0, 0, 0, 0.03);
+  border-color: var(--elevation-card-border, #e4e4e7);
+}
+
+[data-theme="light"] .home-module-card-tag {
+  color: var(--text-muted, #52525b);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .home-module-card-ext {
+  color: var(--text-muted, #a1a1aa);
+}
+
+/* ========== Responsive Breakpoints ========== */
+@media (max-width: 1200px) {
+  .home-modules-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .home-modules-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
-  .home-module-card {
-    flex: 0 0 180px;
+  .home-modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .home-modules-grid {
+    grid-template-columns: 1fr;
   }
 }
