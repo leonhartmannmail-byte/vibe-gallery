@@ -11,6 +11,7 @@ import FilterBar from '../components/FilterBar/FilterBar'
 import GridBackground from '../components/Background/GridBackground'
 import SplashCursor from '../components/SplashCursor/SplashCursor'
 import { FEATURED_WORK_IDS } from '../config/featured'
+import { NavSitesSection, PromptsSection, McpSection, SkillsSection } from '../components/HomeModules/HomeModules'
 import './Home.css'
 
 const trendingTags = [
@@ -58,6 +59,7 @@ function Home() {
   const [toolWorks, setToolWorks] = useState({})
   const [trendingWorks, setTrendingWorks] = useState([])
   const [topCreators, setTopCreators] = useState([])
+  const [homeConfig, setHomeConfig] = useState({})
   const [activePlatform, setActivePlatform] = useState('mobile')
   const [activeTool, setActiveTool] = useState('Claude Code')
   const [loading, setLoading] = useState(true)
@@ -142,6 +144,20 @@ function Home() {
               profile: cProfiles?.find(p => p.id === c.userId) || null,
             })))
           }
+        }
+
+        // 6. Home module config
+        try {
+          const configData = await sbQuery('home_config', {
+            params: '?select=*&order=sort_order.asc'
+          })
+          if (configData) {
+            const configMap = {}
+            configData.forEach(c => { configMap[c.module_key] = c })
+            setHomeConfig(configMap)
+          }
+        } catch (e) {
+          // home_config table may not exist yet, silently ignore
         }
       } catch (err) {
         console.error('Failed to load home data:', err)
@@ -408,6 +424,20 @@ function Home() {
             ))}
           </div>
         </motion.section>
+      )}
+
+      {/* New Modules — configurable from admin */}
+      {homeConfig.nav_sites?.is_visible !== false && (
+        <NavSitesSection delay={0.5} />
+      )}
+      {homeConfig.ai_prompts?.is_visible !== false && (
+        <PromptsSection delay={0.55} />
+      )}
+      {homeConfig.mcp_servers?.is_visible !== false && (
+        <McpSection delay={0.6} />
+      )}
+      {homeConfig.skills?.is_visible !== false && (
+        <SkillsSection delay={0.65} />
       )}
 
       {/* Explore CTA */}

@@ -4,6 +4,7 @@ import { AuthProvider } from './hooks/useAuth'
 import { ThemeProvider } from './hooks/useTheme'
 import { LanguageProvider } from './hooks/useLanguage'
 import Navbar from './components/Navbar/Navbar'
+import AdminGuard from './components/AdminGuard'
 
 const Home = lazy(() => import('./pages/Home'))
 const Auth = lazy(() => import('./pages/Auth'))
@@ -16,6 +17,18 @@ const CollectionDetail = lazy(() => import('./pages/CollectionDetail'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const AuthConfirm = lazy(() => import('./pages/AuthConfirm'))
 const Explore = lazy(() => import('./pages/Explore'))
+
+// Admin pages
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminWorks = lazy(() => import('./pages/admin/AdminWorks'))
+const AdminRecommendations = lazy(() => import('./pages/admin/AdminRecommendations'))
+const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
+const AdminNavSites = lazy(() => import('./pages/admin/AdminNavSites'))
+const AdminPrompts = lazy(() => import('./pages/admin/AdminPrompts'))
+const AdminMcp = lazy(() => import('./pages/admin/AdminMcp'))
+const AdminSkills = lazy(() => import('./pages/admin/AdminSkills'))
+const AdminHomeConfig = lazy(() => import('./pages/admin/AdminHomeConfig'))
 
 function LoadingFallback() {
   return (
@@ -31,21 +44,41 @@ function App() {
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <Navbar />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/explore" element={<Explore />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/confirmed" element={<AuthConfirm />} />
-                <Route path="/publish" element={<Publish />} />
-                <Route path="/edit/:id" element={<EditWork />} />
-                <Route path="/work/:id" element={<WorkDetail />} />
-                <Route path="/profile/:id" element={<Profile />} />
-                <Route path="/tag/:tag" element={<TagPage />} />
-                <Route path="/collection/:id" element={<CollectionDetail />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="*" element={<NotFound />} />
+                {/* Admin routes — own layout, no Navbar */}
+                <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="works" element={<AdminWorks />} />
+                  <Route path="recommendations" element={<AdminRecommendations />} />
+                  <Route path="accounts" element={<AdminAccounts />} />
+                  <Route path="nav-sites" element={<AdminNavSites />} />
+                  <Route path="prompts" element={<AdminPrompts />} />
+                  <Route path="mcp" element={<AdminMcp />} />
+                  <Route path="skills" element={<AdminSkills />} />
+                  <Route path="home-config" element={<AdminHomeConfig />} />
+                </Route>
+
+                {/* Public routes — with Navbar */}
+                <Route path="*" element={
+                  <>
+                    <Navbar />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/explore" element={<Explore />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/auth/confirmed" element={<AuthConfirm />} />
+                      <Route path="/publish" element={<Publish />} />
+                      <Route path="/edit/:id" element={<EditWork />} />
+                      <Route path="/work/:id" element={<WorkDetail />} />
+                      <Route path="/profile/:id" element={<Profile />} />
+                      <Route path="/tag/:tag" element={<TagPage />} />
+                      <Route path="/collection/:id" element={<CollectionDetail />} />
+                      <Route path="/privacy" element={<Privacy />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </>
+                } />
               </Routes>
             </Suspense>
           </AuthProvider>
