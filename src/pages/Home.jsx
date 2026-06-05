@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Sparkles, Flame, ArrowRight, Terminal, Bot, Zap, Cpu, Rocket, Eye, FlaskConical, Star, Trophy, Smartphone, Monitor, Globe, Wind } from 'lucide-react'
+import { Sparkles, Flame, ArrowRight, Terminal, Bot, Zap, Rocket, Eye, FlaskConical, Star, Trophy, Smartphone, Monitor, Globe } from 'lucide-react'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
 import { sbQuery } from '../lib/supabase'
-import BentoGrid from '../components/BentoGrid/BentoGrid'
 import WorkCard from '../components/WorkCard/WorkCard'
 import FilterBar from '../components/FilterBar/FilterBar'
 import GridBackground from '../components/Background/GridBackground'
 import SplashCursor from '../components/SplashCursor/SplashCursor'
 import { FEATURED_WORK_IDS } from '../config/featured'
+import { NavSitesSection, PromptsSection, McpSection, SkillsSection } from '../components/HomeModules/HomeModules'
 import './Home.css'
 
 const trendingTags = [
@@ -24,14 +24,6 @@ const trendingTags = [
   { tag: 'BuildInPublic', icon: Eye },
   { tag: 'Experimental', icon: FlaskConical },
   { tag: 'SideProject', icon: Rocket },
-]
-
-const TOOL_TABS = ['Cursor', 'Claude Code', 'Codex', 'Windsurf', 'Aider']
-const TOOL_ICONS = { Cursor: Terminal, 'Claude Code': Bot, Codex: Zap, Windsurf: Wind, Aider: Cpu }
-
-const PLATFORM_TABS = [
-  { value: 'mobile', icon: Smartphone, label: { zh: 'Mobile Apps', en: 'Mobile Apps' } },
-  { value: 'web', icon: Monitor, label: { zh: 'Web & Desktop', en: 'Web & Desktop' } },
 ]
 
 const RANK_ICONS = [Trophy, Star, Star]
@@ -48,78 +40,63 @@ async function enrichWithProfiles(works) {
   return works.map(w => ({ ...w, profiles: map[w.user_id] || null }))
 }
 
-function Home() {
-  const { t, locale } = useLanguage()
-  const { fetchWorksByIds } = useWorks()
-  const lang = locale === 'en' ? 'en' : 'zh'
+function splitByPlatform(works) {
+  const result = { web: [], mobile: [] }
+  works.forEach(w => {
+    if (w.platform === 'mobile') {
+      result.mobile.push(w)
+    } else {
+      result.web.push(w)
+    }
+  })
+  return result
+}
 
-  const [bentoWorks, setBentoWorks] = useState([])
-  const [platformWorks, setPlatformWorks] = useState({ mobile: [], web: [] })
-  const [toolWorks, setToolWorks] = useState({})
-  const [trendingWorks, setTrendingWorks] = useState([])
+function Home() {
+  const { t } = useLanguage()
+  const { fetchWorksByIds } = useWorks()
+
+  const [featuredByPlatform, setFeaturedByPlatform] = useState(null)
+  const [trendingByPlatform, setTrendingByPlatform] = useState(null)
   const [topCreators, setTopCreators] = useState([])
-  const [activePlatform, setActivePlatform] = useState('mobile')
-  const [activeTool, setActiveTool] = useState('Claude Code')
+  const [homeConfig, setHomeConfig] = useState({})
+  const [activeFeaturedTab, setActiveFeaturedTab] = useState('web')
+  const [activeTrendingTab, setActiveTrendingTab] = useState('web')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        // 1. Featured works
-        let featured = []
-        if (FEATURED_WORK_IDS.length > 0) {
-          featured = await fetchWorksByIds(FEATURED_WORK_IDS)
+        // 1. Featured works — only show admin-recommended works, no fallback
+        const featuredData = await sbQuery('works', {
+          params: '?select=*&is_featured=eq.true&order=likes_count.desc&limit=20'
+        })
+        if (featuredData && featuredData.length > 0) {
+          setFeaturedByPlatform(splitByPlatform(await enrichWithProfiles(featuredData)))
+        } else {
+          setFeaturedByPlatform({ web: [], mobile: [] })
         }
-        if (featured.length === 0) {
-          const data = await sbQuery('works', {
-            params: '?select=*&order=likes_count.desc&limit=6'
-          })
-          featured = await enrichWithProfiles(data)
-        }
-        setBentoWorks(featured)
 
         // Parallel queries
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
-        const [mobileData, webData, trendingData, allWorksLite] = await Promise.all([
-          sbQuery('works', { params: '?select=*&platform=eq.mobile&order=likes_count.desc&limit=4' }),
-          sbQuery('works', { params: '?select=*&platform=eq.web&order=likes_count.desc&limit=4' }),
+        const [trendingData, allWorksLite] = await Promise.all([
           sbQuery('works', {
-            params: `?select=*&created_at=gte.${sevenDaysAgo}&order=likes_count.desc&limit=8`
+            params: `?select=*&created_at=gte.${sevenDaysAgo}&order=likes_count.desc&limit=20`
           }),
           sbQuery('works', { params: '?select=user_id,likes_count' }),
         ])
 
-        // 2. Platform works
-        setPlatformWorks({
-          mobile: await enrichWithProfiles(mobileData),
-          web: await enrichWithProfiles(webData),
-        })
-
-        // 3. Tool works (query top 5 tools)
-        const toolResults = await Promise.all(
-          TOOL_TABS.map(tool =>
-            sbQuery('works', {
-              params: `?select=*&ai_tools=cs.{"${tool}"}&order=likes_count.desc&limit=4`
-            })
-          )
-        )
-        const toolMap = {}
-        for (let i = 0; i < TOOL_TABS.length; i++) {
-          toolMap[TOOL_TABS[i]] = await enrichWithProfiles(toolResults[i])
-        }
-        setToolWorks(toolMap)
-
-        // 4. Trending this week
+        // 2. Trending this week
         let trending = trendingData || []
-        if (trending.length < 3) {
+        if (trending.length < 10) {
           const fallback = await sbQuery('works', {
-            params: '?select=*&order=likes_count.desc&limit=8'
+            params: '?select=*&order=likes_count.desc&limit=20'
           })
           trending = fallback || []
         }
-        setTrendingWorks(await enrichWithProfiles(trending))
+        setTrendingByPlatform(splitByPlatform(await enrichWithProfiles(trending)))
 
-        // 5. Top Creators
+        // 3. Top Creators
         if (allWorksLite) {
           const creatorMap = {}
           allWorksLite.forEach(w => {
@@ -143,6 +120,20 @@ function Home() {
             })))
           }
         }
+
+        // 4. Home module config
+        try {
+          const configData = await sbQuery('home_config', {
+            params: '?select=*&order=sort_order.asc'
+          })
+          if (configData) {
+            const configMap = {}
+            configData.forEach(c => { configMap[c.module_key] = c })
+            setHomeConfig(configMap)
+          }
+        } catch (e) {
+          // home_config table may not exist yet, silently ignore
+        }
       } catch (err) {
         console.error('Failed to load home data:', err)
       } finally {
@@ -151,10 +142,6 @@ function Home() {
     }
     load()
   }, [fetchWorksByIds])
-
-  const mobileWorks = platformWorks.mobile
-  const webWorks = platformWorks.web
-  const currentToolWorks = toolWorks[activeTool] || []
 
   return (
     <div className="home-page">
@@ -226,10 +213,10 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* Featured Works — BentoGrid */}
-      {bentoWorks.length > 0 && (
+      {/* Featured Works */}
+      {homeConfig.featured?.is_visible !== false && featuredByPlatform && (featuredByPlatform.web.length > 0 || featuredByPlatform.mobile.length > 0) && (
         <motion.section
-          className="home-bento-section"
+          className="home-section"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.25 }}
@@ -239,118 +226,39 @@ function Home() {
             <h2>{t('home.featured')}</h2>
             <span className="home-section-subtitle">{t('home.editorPicks')}</span>
           </div>
-          <BentoGrid works={bentoWorks} />
-        </motion.section>
-      )}
-
-      {loading && bentoWorks.length === 0 && (
-        <div className="home-bento-section">
-          <div className="home-section-header">
-            <Star size={20} className="home-section-icon" />
-            <h2>{t('home.featured')}</h2>
-          </div>
-          <div className="home-bento-skeleton">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className={`skeleton bento-skeleton-item bento-skeleton-${i}`} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* By Platform */}
-      {(mobileWorks.length > 0 || webWorks.length > 0) && (
-        <motion.section
-          className="home-section home-section--tabbed"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <div className="home-section-header">
-            <Globe size={20} className="home-section-icon home-section-icon--platform" />
-            <h2>{t('home.sectionByPlatform')}</h2>
-          </div>
           <div className="home-section-tabs">
-            {PLATFORM_TABS.map(tab => {
-              const works = tab.value === 'mobile' ? mobileWorks : webWorks
-              if (works.length === 0) return null
-              return (
-                <button
-                  key={tab.value}
-                  className={`home-section-tab ${activePlatform === tab.value ? 'active' : ''}`}
-                  onClick={() => setActivePlatform(tab.value)}
-                >
-                  <tab.icon size={14} />
-                  <span>{tab.label[lang]}</span>
-                </button>
-              )
-            })}
+            <button
+              className={`home-section-tab ${activeFeaturedTab === 'web' ? 'active' : ''}`}
+              onClick={() => setActiveFeaturedTab('web')}
+            >
+              <Monitor size={14} />
+              <span>Web & Desktop</span>
+            </button>
+            <button
+              className={`home-section-tab ${activeFeaturedTab === 'mobile' ? 'active' : ''}`}
+              onClick={() => setActiveFeaturedTab('mobile')}
+            >
+              <Smartphone size={14} />
+              <span>Mobile Apps</span>
+            </button>
           </div>
-          <div className="home-section-grid">
-            {(activePlatform === 'mobile' ? mobileWorks : webWorks).slice(0, 4).map((work, i) => (
-              <div key={work.id} className="home-section-grid-item">
+          <div className="home-works-grid">
+            {(activeFeaturedTab === 'web' ? featuredByPlatform.web : featuredByPlatform.mobile).slice(0, 10).map((work, i) => (
+              <div key={work.id} className="home-works-grid-item">
                 <WorkCard work={work} index={i} />
               </div>
             ))}
-          </div>
-          <div className="home-section-footer">
-            <Link to={`/explore?platform=${activePlatform}`} className="home-section-view-all">
-              {t('home.viewAll')} <ArrowRight size={14} />
-            </Link>
-          </div>
-        </motion.section>
-      )}
-
-      {/* By Tool */}
-      {Object.values(toolWorks).some(w => w.length > 0) && (
-        <motion.section
-          className="home-section home-section--tabbed"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-        >
-          <div className="home-section-header">
-            <Terminal size={20} className="home-section-icon home-section-icon--tool" />
-            <h2>{t('home.sectionByTool')}</h2>
-          </div>
-          <div className="home-section-tabs">
-            {TOOL_TABS.map(tool => {
-              const works = toolWorks[tool] || []
-              if (works.length === 0) return null
-              const Icon = TOOL_ICONS[tool] || Terminal
-              return (
-                <button
-                  key={tool}
-                  className={`home-section-tab ${activeTool === tool ? 'active' : ''}`}
-                  onClick={() => setActiveTool(tool)}
-                >
-                  <Icon size={14} />
-                  <span>{tool}</span>
-                </button>
-              )
-            })}
-          </div>
-          <div className="home-section-grid">
-            {currentToolWorks.slice(0, 4).map((work, i) => (
-              <div key={work.id} className="home-section-grid-item">
-                <WorkCard work={work} index={i} />
-              </div>
-            ))}
-          </div>
-          <div className="home-section-footer">
-            <Link to={`/explore?tool=${encodeURIComponent(activeTool)}`} className="home-section-view-all">
-              {t('home.viewAll')} <ArrowRight size={14} />
-            </Link>
           </div>
         </motion.section>
       )}
 
       {/* Trending This Week */}
-      {trendingWorks.length > 0 && (
+      {homeConfig.trending?.is_visible !== false && trendingByPlatform && (trendingByPlatform.web.length > 0 || trendingByPlatform.mobile.length > 0) && (
         <motion.section
           className="home-section"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
         >
           <div className="home-section-header">
             <Flame size={20} className="home-section-icon home-section-icon--trending" />
@@ -359,9 +267,25 @@ function Home() {
               {t('home.viewAll')} <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="home-section-scroll">
-            {trendingWorks.map((work, i) => (
-              <div key={work.id} className="home-section-item">
+          <div className="home-section-tabs">
+            <button
+              className={`home-section-tab ${activeTrendingTab === 'web' ? 'active' : ''}`}
+              onClick={() => setActiveTrendingTab('web')}
+            >
+              <Monitor size={14} />
+              <span>Web & Desktop</span>
+            </button>
+            <button
+              className={`home-section-tab ${activeTrendingTab === 'mobile' ? 'active' : ''}`}
+              onClick={() => setActiveTrendingTab('mobile')}
+            >
+              <Smartphone size={14} />
+              <span>Mobile Apps</span>
+            </button>
+          </div>
+          <div className="home-works-grid">
+            {(activeTrendingTab === 'web' ? trendingByPlatform.web : trendingByPlatform.mobile).slice(0, 10).map((work, i) => (
+              <div key={work.id} className="home-works-grid-item">
                 <WorkCard work={work} index={i} />
               </div>
             ))}
@@ -370,7 +294,7 @@ function Home() {
       )}
 
       {/* Top Creators — Leaderboard */}
-      {topCreators.length > 0 && (
+      {homeConfig.creators?.is_visible !== false && topCreators.length > 0 && (
         <motion.section
           className="home-section home-section--creators"
           initial={{ opacity: 0, y: 15 }}
@@ -408,6 +332,20 @@ function Home() {
             ))}
           </div>
         </motion.section>
+      )}
+
+      {/* New Modules — configurable from admin */}
+      {homeConfig.nav_sites?.is_visible !== false && (
+        <NavSitesSection delay={0.5} />
+      )}
+      {homeConfig.ai_prompts?.is_visible !== false && (
+        <PromptsSection delay={0.55} />
+      )}
+      {homeConfig.mcp_servers?.is_visible !== false && (
+        <McpSection delay={0.6} />
+      )}
+      {homeConfig.skills?.is_visible !== false && (
+        <SkillsSection delay={0.65} />
       )}
 
       {/* Explore CTA */}

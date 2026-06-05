@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, LogOut, User, Sun, Moon, Compass } from 'lucide-react'
+import { Plus, LogOut, User, Sun, Moon, Compass, Shield } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
 import { useLanguage } from '../../hooks/useLanguage'
@@ -123,6 +123,16 @@ function Navbar() {
                         <User size={16} />
                         {t('navbar.profile')}
                       </Link>
+                      {profile?.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          className="navbar-dropdown-item"
+                          onClick={() => setShowMenu(false)}
+                        >
+                          <Shield size={16} />
+                          管理后台
+                        </Link>
+                      )}
                       <button
                         className="navbar-dropdown-item navbar-dropdown-item--danger"
                         onClick={handleSignOut}
