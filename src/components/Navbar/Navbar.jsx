@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, LogOut, User, Sun, Moon, Compass, Shield } from 'lucide-react'
+import { Plus, LogOut, User, Sun, Moon, Compass, Shield, Menu, X } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
 import { useLanguage } from '../../hooks/useLanguage'
@@ -14,6 +14,7 @@ function Navbar() {
   const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const avatarRef = useRef(null)
 
   useEffect(() => {
@@ -42,9 +43,20 @@ function Navbar() {
     }
   }, [showMenu])
 
+  // 移动端菜单打开时禁止背景滚动
+  useEffect(() => {
+    if (showMobileMenu) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [showMobileMenu])
+
   async function handleSignOut() {
     await signOut()
     setShowMenu(false)
+    setShowMobileMenu(false)
     navigate('/')
   }
 
@@ -65,6 +77,14 @@ function Navbar() {
             <span>{t('navbar.explore')}</span>
           </Link>
         </div>
+
+        {/* 移动端汉堡菜单按钮 */}
+        <button
+          className="navbar-mobile-toggle"
+          onClick={() => setShowMobileMenu(!showMobileMenu)}
+        >
+          {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
+        </button>
 
         <div className="navbar-actions">
           <button className="navbar-theme-btn" onClick={toggleTheme} title={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}>
@@ -152,6 +172,54 @@ function Navbar() {
           )}
         </div>
       </div>
+
+      {/* 移动端全屏菜单 */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <motion.div
+            className="navbar-mobile-menu"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="navbar-mobile-menu-inner">
+              <Link to="/explore" className="navbar-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                <Compass size={18} />
+                {t('navbar.explore')}
+              </Link>
+
+              {user ? (
+                <>
+                  <Link to="/publish" className="navbar-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                    <Plus size={18} />
+                    {t('navbar.publish')}
+                  </Link>
+                  <Link to={`/profile/${user.id}`} className="navbar-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                    <User size={18} />
+                    {t('navbar.profile')}
+                  </Link>
+                  {profile?.role === 'admin' && (
+                    <Link to="/admin" className="navbar-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                      <Shield size={18} />
+                      管理后台
+                    </Link>
+                  )}
+                  <div className="navbar-mobile-divider" />
+                  <button className="navbar-mobile-link navbar-mobile-link--danger" onClick={handleSignOut}>
+                    <LogOut size={18} />
+                    {t('navbar.signOut')}
+                  </button>
+                </>
+              ) : (
+                <Link to="/auth" className="navbar-mobile-link" onClick={() => setShowMobileMenu(false)}>
+                  {t('navbar.login')}
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   )
 }

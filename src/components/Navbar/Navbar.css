@@ -256,3 +256,100 @@
 .navbar-dropdown-item--danger:hover {
   background: var(--danger-hover-bg);
 }
+
+/* ---- 移动端汉堡菜单按钮 ---- */
+.navbar-mobile-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ---- 移动端全屏菜单 ---- */
+.navbar-mobile-menu {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-primary);
+  z-index: 99;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navbar-mobile-menu-inner {
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.navbar-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+.navbar-mobile-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.navbar-mobile-link--danger {
+  color: var(--accent-like);
+}
+
+.navbar-mobile-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: var(--space-2) 0;
+}
+
+/* ---- 移动端响应式 ---- */
+@media (max-width: 768px) {
+  .navbar-inner {
+    padding: 0 var(--space-4);
+  }
+
+  .navbar-left {
+    gap: var(--space-4);
+  }
+
+  .navbar-explore-link span {
+    display: none;
+  }
+
+  .navbar-actions {
+    display: none;
+  }
+
+  .navbar-mobile-toggle {
+    display: flex;
+  }
+
+  .navbar-dropdown {
+    position: fixed;
+    top: auto;
+    right: var(--space-4);
+    width: calc(100vw - var(--space-8));
+    max-width: 300px;
+  }
+}
