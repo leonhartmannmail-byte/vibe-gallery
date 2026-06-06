@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ExternalLink, Tag, ChevronLeft, ChevronRight, Edit3, Trash2, Wrench, Bot, Terminal, Clock, Layers, Smartphone, Monitor } from 'lucide-react'
+import { ExternalLink, Tag, ChevronLeft, ChevronRight, Edit3, Trash2, Wrench, Bot, Terminal, Clock, Layers, Smartphone, Monitor, X, ZoomIn } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
@@ -24,6 +24,7 @@ function WorkDetail() {
   const [loading, setLoading] = useState(true)
   const [currentImage, setCurrentImage] = useState(0)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [metadata, setMetadata] = useState(null)
   const [relatedWorks, setRelatedWorks] = useState({ similar: [], fromAuthor: [] })
@@ -103,6 +104,28 @@ function WorkDetail() {
     setCurrentImage(prev => prev === allImages.length - 1 ? 0 : prev + 1)
   }
 
+  function openPreview() {
+    if (allImages.length > 0 && allImages[currentImage] !== 'emoji-cover') {
+      setShowPreview(true)
+    }
+  }
+
+  // 预览模态框键盘事件
+  useEffect(() => {
+    if (!showPreview) return
+    function handleKey(e) {
+      if (e.key === 'Escape') setShowPreview(false)
+      if (e.key === 'ArrowLeft') handlePrevImage()
+      if (e.key === 'ArrowRight') handleNextImage()
+    }
+    document.addEventListener('keydown', handleKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = ''
+    }
+  }, [showPreview])
+
   async function handleDelete() {
     setDeleting(true)
     const { error } = await deleteWork(work.id)
@@ -124,7 +147,7 @@ function WorkDetail() {
       >
         {/* 图片画廊 */}
         <div className="work-detail-gallery">
-          <div className="work-detail-main-image">
+          <div className="work-detail-main-image" onClick={openPreview} style={{ cursor: allImages.length > 0 && allImages[currentImage] !== 'emoji-cover' ? 'zoom-in' : 'default' }}>
             <AnimatePresence mode="wait">
               {isEmojiCover && currentImage === 0 ? (
                 <motion.div
@@ -157,6 +180,13 @@ function WorkDetail() {
                 />
               ) : null}
             </AnimatePresence>
+
+            {/* 缩放提示图标 */}
+            {allImages.length > 0 && allImages[currentImage] !== 'emoji-cover' && (
+              <div className="work-detail-zoom-hint">
+                <ZoomIn size={20} />
+              </div>
+            )}
 
             {allImages.length > 1 && (
               <>
@@ -446,6 +476,48 @@ function WorkDetail() {
           </motion.div>
         </div>
       )}
+
+      {/* 图片预览模态框 */}
+      <AnimatePresence>
+        {showPreview && allImages[currentImage] && allImages[currentImage] !== 'emoji-cover' && (
+          <motion.div
+            className="image-preview-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowPreview(false)}
+          >
+            <button className="image-preview-close" onClick={() => setShowPreview(false)}>
+              <X size={24} />
+            </button>
+
+            <motion.img
+              className="image-preview-img"
+              src={allImages[currentImage]}
+              alt={work.title}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {allImages.filter(img => img !== 'emoji-cover').length > 1 && (
+              <>
+                <button className="image-preview-nav image-preview-nav--prev" onClick={(e) => { e.stopPropagation(); handlePrevImage() }}>
+                  <ChevronLeft size={32} />
+                </button>
+                <button className="image-preview-nav image-preview-nav--next" onClick={(e) => { e.stopPropagation(); handleNextImage() }}>
+                  <ChevronRight size={32} />
+                </button>
+                <div className="image-preview-counter">
+                  {currentImage + 1} / {allImages.length}
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
