@@ -14,13 +14,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 })
 
 // 从 localStorage 读取 access_token（不依赖 Supabase 客户端）
+// 检查 JWT 过期时间，过期则返回 null 以回退到 anon key
 function getLocalToken() {
   try {
     const raw = localStorage.getItem(supabaseUrl + '-auth-token')
     if (!raw) return null
     const parsed = JSON.parse(raw)
     const session = parsed?.currentSession || parsed
-    return session?.access_token || null
+    const token = session?.access_token
+    if (!token) return null
+    // 检查 JWT 是否过期
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (payload.exp * 1000 < Date.now()) return null
+    return token
   } catch {
     return null
   }
@@ -71,6 +77,7 @@ export async function sbQuery(table, { method = 'GET', params = '', body = null 
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
+    console.error(`[sbQuery] ${method} ${table} 失败 (${res.status}):`, err.message || err)
     throw new Error(err.message || `请求失败 (${res.status})`)
   }
 

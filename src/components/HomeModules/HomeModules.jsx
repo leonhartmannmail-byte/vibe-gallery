@@ -13,7 +13,7 @@ export function NavSitesSection({ delay = 0.5 }) {
   useEffect(() => {
     sbQuery('nav_sites', { params: '?select=*&is_active=eq.true&order=sort_order.asc&limit=10' })
       .then(data => setSites(data || []))
-      .catch(() => {})
+      .catch(err => console.error('[HomeModules] 导航网站加载失败:', err.message))
   }, [])
 
   if (sites.length === 0) return null
@@ -72,7 +72,7 @@ export function PromptsSection({ delay = 0.55 }) {
   useEffect(() => {
     sbQuery('ai_prompts', { params: '?select=*&is_active=eq.true&order=sort_order.asc&limit=10' })
       .then(data => setPrompts(data || []))
-      .catch(() => {})
+      .catch(err => console.error('[HomeModules] AI提示词加载失败:', err.message))
   }, [])
 
   if (prompts.length === 0) return null
@@ -122,7 +122,7 @@ export function McpSection({ delay = 0.6 }) {
   useEffect(() => {
     sbQuery('mcp_servers', { params: '?select=*&is_active=eq.true&order=sort_order.asc&limit=10' })
       .then(data => setServers(data || []))
-      .catch(() => {})
+      .catch(err => console.error('[HomeModules] MCP服务加载失败:', err.message))
   }, [])
 
   if (servers.length === 0) return null
@@ -172,7 +172,7 @@ export function SkillsSection({ delay = 0.65 }) {
   useEffect(() => {
     sbQuery('skills_data', { params: '?select=*&is_active=eq.true&order=sort_order.asc&limit=10' })
       .then(data => setSkills(data || []))
-      .catch(() => {})
+      .catch(err => console.error('[HomeModules] Skills技能加载失败:', err.message))
   }, [])
 
   if (skills.length === 0) return null

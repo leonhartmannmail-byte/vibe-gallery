@@ -353,7 +353,7 @@ export function useWorks() {
       if (tags.length > 0) {
         const tag = tags[0]
         const data = await sbQuery('works', {
-          params: `?select=*&tags=cs.{${tag}}&id=neq.${excludeId || ''}&limit=4&order=likes_count.desc`
+          params: `?select=*&tags=cs.{${tag}}&id=neq.${excludeId || ''}&limit=8&order=likes_count.desc`
         })
         const userIds = [...new Set((data || []).map(w => w.user_id))]
         const profilesMap = await fetchProfiles(userIds)
@@ -363,7 +363,7 @@ export function useWorks() {
       // 查作者更多作品
       if (authorId) {
         const data = await sbQuery('works', {
-          params: `?select=*&user_id=eq.${authorId}&id=neq.${excludeId || ''}&limit=4&order=created_at.desc`
+          params: `?select=*&user_id=eq.${authorId}&id=neq.${excludeId || ''}&limit=8&order=created_at.desc`
         })
         const userIds = [...new Set((data || []).map(w => w.user_id))]
         const profilesMap = await fetchProfiles(userIds)
