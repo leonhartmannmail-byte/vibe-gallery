@@ -281,6 +281,60 @@ a.listing-card:hover .listing-card-ext { opacity: 1; }
   font-size: 14px;
 }
 
+/* Load More */
+.listing-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0 var(--space-4);
+}
+
+.listing-load-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 32px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--elevation-card-border);
+  background: var(--elevation-card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.listing-load-more-btn:hover:not(:disabled) {
+  border-color: rgba(167, 139, 250, 0.4);
+  color: var(--text-primary);
+  background: var(--elevation-card-hover-bg);
+}
+
+.listing-load-more-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-theme="light"] .listing-load-more-btn:hover:not(:disabled) {
+  border-color: rgba(124, 58, 237, 0.25);
+}
+
+.listing-total-info {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: var(--space-2) 0 var(--space-6);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 @media (max-width: 640px) {
   .listing-container { padding: var(--space-6) var(--space-4) var(--space-12); }
   .listing-header { flex-direction: column; align-items: flex-start; }

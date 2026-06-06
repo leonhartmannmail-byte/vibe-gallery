@@ -1,37 +1,26 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Compass, Search, ExternalLink } from 'lucide-react'
-import { sbQuery } from '../lib/supabase'
+import { Compass, Search, ExternalLink, Loader2 } from 'lucide-react'
+import { usePaginatedList } from '../hooks/usePaginatedList'
 import { getBrandIcon } from '../utils/lobeIcons'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
 function NavSites() {
-  const [items, setItems] = useState([])
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
+  // 搜索防抖 300ms
   useEffect(() => {
-    sbQuery('nav_sites', { params: '?select=*&is_active=eq.true&order=sort_order.asc&limit=10000' })
-      .then(data => {
-        const list = data || []
-        setItems(list)
-        const cats = [...new Set(list.map(i => i.category).filter(Boolean))]
-        setCategories(cats)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+    const t = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(t)
+  }, [search])
 
-  const filtered = items.filter(item => {
-    const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || item.description?.toLowerCase().includes(search.toLowerCase())
-    const matchCat = activeCategory === 'all' || item.category === activeCategory
-    return matchSearch && matchCat
+  const { items, total, loading, loadingMore, hasMore, loadMore, categories } = usePaginatedList('nav_sites', {
+    search: debouncedSearch,
+    category: activeCategory,
   })
-
-  const sorted = [...filtered].sort((a, b) => (b.is_recommended ? 1 : 0) - (a.is_recommended ? 1 : 0))
 
   return (
     <div className="listing-page">
@@ -41,7 +30,7 @@ function NavSites() {
           <Compass size={28} className="listing-icon listing-icon--nav" />
           <div>
             <h1 className="listing-title">导航网站推荐</h1>
-            <p className="listing-subtitle">精选 AI 工具与网站，共 {items.length} 个</p>
+            <p className="listing-subtitle">精选 AI 工具与网站，共 {total} 个</p>
           </div>
         </motion.div>
 
@@ -60,24 +49,36 @@ function NavSites() {
 
         {loading ? (
           <div className="listing-loading">加载中...</div>
-        ) : sorted.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="listing-empty">没有找到相关网站</div>
         ) : (
-          <motion.div className="listing-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.2 }}>
-            {sorted.map((item, i) => (
-              <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className="listing-card" style={{ animationDelay: `${i * 0.03}s` }}>
-                {item.is_recommended && <div className="listing-card-badge">推荐</div>}
-                <div className="listing-card-icon">
-                  {item.icon_url ? <img src={item.icon_url} alt="" /> : (() => { const BIcon = getBrandIcon(item.name); return BIcon ? <BIcon size={28} /> : <span>{item.name[0]}</span> })()}
-                </div>
-                <div className="listing-card-body">
-                  <div className="listing-card-name">{item.name} <ExternalLink size={11} className="listing-card-ext" /></div>
-                  <div className="listing-card-desc">{item.description}</div>
-                  <div className="listing-card-tag">{item.category}</div>
-                </div>
-              </a>
-            ))}
-          </motion.div>
+          <>
+            <motion.div className="listing-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.2 }}>
+              {items.map((item, i) => (
+                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className="listing-card" style={{ animationDelay: `${Math.min(i, 49) * 0.02}s` }}>
+                  {item.is_recommended && <div className="listing-card-badge">推荐</div>}
+                  <div className="listing-card-icon">
+                    {item.icon_url ? <img src={item.icon_url} alt="" /> : (() => { const BIcon = getBrandIcon(item.name); return BIcon ? <BIcon size={28} /> : <span>{item.name[0]}</span> })()}
+                  </div>
+                  <div className="listing-card-body">
+                    <div className="listing-card-name">{item.name} <ExternalLink size={11} className="listing-card-ext" /></div>
+                    <div className="listing-card-desc">{item.description}</div>
+                    <div className="listing-card-tag">{item.category}</div>
+                  </div>
+                </a>
+              ))}
+            </motion.div>
+
+            <div className="listing-load-more-wrap">
+              {hasMore ? (
+                <button className="listing-load-more-btn" onClick={loadMore} disabled={loadingMore}>
+                  {loadingMore ? <><Loader2 size={16} className="spin" /> 加载中...</> : '加载更多'}
+                </button>
+              ) : items.length > 0 && (
+                <span className="listing-total-info">已显示全部 {total} 条</span>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

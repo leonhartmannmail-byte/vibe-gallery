@@ -105,3 +105,30 @@ export async function sbQueryAll(table, { params = '', pageSize = 1000 } = {}) {
 
   return allItems
 }
+
+// 单页查询（返回数据 + 总数，用于前端分页）
+export async function sbQueryPage(table, { params = '', offset = 0, limit = 50 } = {}) {
+  const token = getLocalToken() || supabaseAnonKey
+
+  const headers = {
+    'apikey': supabaseAnonKey,
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Range': `${offset}-${offset + limit - 1}`,
+    'Prefer': 'count=exact'
+  }
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/${table}${params}`, { headers })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.message || `请求失败 (${res.status})`)
+  }
+
+  const data = await res.json()
+  // 从 Content-Range 头提取总数: "0-49/1234" 或 "0-49/*"
+  const rangeHeader = res.headers.get('Content-Range') || ''
+  const totalMatch = rangeHeader.match(/\/(\d+)/)
+  const total = totalMatch ? parseInt(totalMatch[1], 10) : data.length
+
+  return { data, total }
+}

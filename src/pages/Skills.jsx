@@ -1,40 +1,31 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Wrench, Search, ExternalLink } from 'lucide-react'
-import { sbQuery, sbQueryAll } from '../lib/supabase'
+import { Wrench, Search, ExternalLink, Loader2 } from 'lucide-react'
+import { usePaginatedList } from '../hooks/usePaginatedList'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
+const transformSkill = (item) => ({
+  ...item,
+  mainCategory: item.category ? item.category.split(',')[0].trim() : ''
+})
+
 function Skills() {
-  const [items, setItems] = useState([])
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
   useEffect(() => {
-    sbQueryAll('skills_data', { params: '?select=*&is_active=eq.true&order=sort_order.asc' })
-      .then(data => {
-        const list = (data || []).map(item => ({
-          ...item,
-          mainCategory: item.category ? item.category.split(',')[0].trim() : ''
-        }))
-        setItems(list)
-        const cats = [...new Set(list.map(i => i.mainCategory).filter(Boolean))]
-        setCategories(cats)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+    const t = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(t)
+  }, [search])
 
-  const filtered = items.filter(item => {
-    const matchSearch = !search || item.name.toLowerCase().includes(search.toLowerCase()) || item.description?.toLowerCase().includes(search.toLowerCase())
-    const matchCat = activeCategory === 'all' || item.mainCategory === activeCategory
-    return matchSearch && matchCat
+  const { items, total, loading, loadingMore, hasMore, loadMore, categories } = usePaginatedList('skills_data', {
+    search: debouncedSearch,
+    category: activeCategory,
+    transform: transformSkill,
   })
-
-  const sorted = [...filtered].sort((a, b) => (b.is_recommended ? 1 : 0) - (a.is_recommended ? 1 : 0))
 
   return (
     <div className="listing-page">
@@ -44,7 +35,7 @@ function Skills() {
           <Wrench size={28} className="listing-icon listing-icon--skills" />
           <div>
             <h1 className="listing-title">Skills 技能</h1>
-            <p className="listing-subtitle">AI Agent 能力模块，共 {items.length} 个</p>
+            <p className="listing-subtitle">AI Agent 能力模块，共 {total} 个</p>
           </div>
         </motion.div>
 
@@ -63,26 +54,38 @@ function Skills() {
 
         {loading ? (
           <div className="listing-loading">加载中...</div>
-        ) : sorted.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="listing-empty">没有找到相关技能</div>
         ) : (
-          <motion.div className="listing-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.2 }}>
-            {sorted.map((item, i) => (
-              <Link key={item.id} to={`/skills/${item.id}`} className="listing-card" style={{ animationDelay: `${i * 0.03}s` }}>
-                {item.is_recommended && <div className="listing-card-badge">推荐</div>}
-                <div className="listing-card-icon">
-                  {item.icon_url ? <img src={item.icon_url} alt="" /> : <span>{item.name[0]}</span>}
-                </div>
-                <div className="listing-card-body">
-                  <div className="listing-card-name">
-                    {item.name} {item.url && <ExternalLink size={11} className="listing-card-ext" />}
+          <>
+            <motion.div className="listing-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.2 }}>
+              {items.map((item, i) => (
+                <Link key={item.id} to={`/skills/${item.id}`} className="listing-card" style={{ animationDelay: `${Math.min(i, 49) * 0.02}s` }}>
+                  {item.is_recommended && <div className="listing-card-badge">推荐</div>}
+                  <div className="listing-card-icon">
+                    {item.icon_url ? <img src={item.icon_url} alt="" /> : <span>{item.name[0]}</span>}
                   </div>
-                  <div className="listing-card-desc">{item.description}</div>
-                  <div className="listing-card-tag">{item.mainCategory}</div>
-                </div>
-              </Link>
-            ))}
-          </motion.div>
+                  <div className="listing-card-body">
+                    <div className="listing-card-name">
+                      {item.name} {item.url && <ExternalLink size={11} className="listing-card-ext" />}
+                    </div>
+                    <div className="listing-card-desc">{item.description}</div>
+                    <div className="listing-card-tag">{item.mainCategory}</div>
+                  </div>
+                </Link>
+              ))}
+            </motion.div>
+
+            <div className="listing-load-more-wrap">
+              {hasMore ? (
+                <button className="listing-load-more-btn" onClick={loadMore} disabled={loadingMore}>
+                  {loadingMore ? <><Loader2 size={16} className="spin" /> 加载中...</> : '加载更多'}
+                </button>
+              ) : items.length > 0 && (
+                <span className="listing-total-info">已显示全部 {total} 条</span>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
