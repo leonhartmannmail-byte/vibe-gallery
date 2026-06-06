@@ -11,6 +11,7 @@ import { getToolIcon, getModelIcon } from '../utils/lobeIcons'
 import LikeButton from '../components/LikeButton/LikeButton'
 import CommentSection from '../components/CommentSection/CommentSection'
 import WorkCard from '../components/WorkCard/WorkCard'
+import MasonryGrid from '../components/MasonryGrid/MasonryGrid'
 import './WorkDetail.css'
 
 function WorkDetail() {
@@ -388,11 +389,13 @@ function WorkDetail() {
         {relatedWorks.similar.length > 0 && (
           <div className="work-detail-related">
             <h3>{t('workDetail.similarWorks')}</h3>
-            <div className="work-detail-related-grid">
+            <MasonryGrid>
               {relatedWorks.similar.map((w, i) => (
-                <WorkCard key={w.id} work={w} index={i} />
+                <div key={w.id} className="work-detail-related-item">
+                  <WorkCard work={w} index={i} />
+                </div>
               ))}
-            </div>
+            </MasonryGrid>
           </div>
         )}
 
@@ -400,11 +403,13 @@ function WorkDetail() {
         {relatedWorks.fromAuthor.length > 0 && (
           <div className="work-detail-related">
             <h3>{t('workDetail.moreFromAuthor')}</h3>
-            <div className="work-detail-related-grid">
+            <MasonryGrid>
               {relatedWorks.fromAuthor.map((w, i) => (
-                <WorkCard key={w.id} work={w} index={i} />
+                <div key={w.id} className="work-detail-related-item">
+                  <WorkCard work={w} index={i} />
+                </div>
               ))}
-            </div>
+            </MasonryGrid>
           </div>
         )}
 
