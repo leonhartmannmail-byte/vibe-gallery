@@ -186,18 +186,6 @@
   padding: var(--space-12) 0;
 }
 
-.profile-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
-}
-
-@media (max-width: 1200px) {
-  .profile-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 768px) {
-  .profile-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 500px) {
-  .profile-grid { grid-template-columns: 1fr; }
+.profile-masonry-item {
+  padding-bottom: var(--space-5);
 }

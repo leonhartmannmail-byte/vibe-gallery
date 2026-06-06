@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
 import WorkCard from '../components/WorkCard/WorkCard'
+import MasonryGrid from '../components/MasonryGrid/MasonryGrid'
 import AvatarCropper from '../components/AvatarCropper/AvatarCropper'
 import './Profile.css'
 
@@ -205,11 +206,13 @@ function Profile() {
         {loading ? (
           <div className="profile-works-loading">{t('profile.loading')}</div>
         ) : userWorks.length > 0 ? (
-          <div className="profile-grid">
+          <MasonryGrid>
             {userWorks.map((work, index) => (
-              <WorkCard key={work.id} work={work} index={index} />
+              <div key={work.id} className="profile-masonry-item">
+                <WorkCard work={work} index={index} />
+              </div>
             ))}
-          </div>
+          </MasonryGrid>
         ) : (
           <div className="profile-works-empty">
             <p>{isOwn ? t('profile.emptyOwn') : t('profile.emptyOther')}</p>
