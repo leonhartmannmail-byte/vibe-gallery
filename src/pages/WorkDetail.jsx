@@ -40,16 +40,6 @@ function WorkDetail() {
       setMetadata(getWorkMetadata(id))
       setLoading(false)
       if (data) {
-        console.log('[WorkDetail] work loaded:', {
-          cover_url: data.cover_url,
-          cover_bg: data.cover_bg,
-          cover_emoji: data.cover_emoji,
-          images: data.images,
-          imagesType: typeof data.images,
-          imagesIsArray: Array.isArray(data.images),
-        })
-      }
-      if (data) {
         const related = await fetchRelatedWorks({
           tags: data.tags || [],
           authorId: data.user_id,
@@ -61,6 +51,46 @@ function WorkDetail() {
     load()
     return () => { cancelled = true }
   }, [id, fetchWork, fetchRelatedWorks])
+
+  // 图片列表（安全计算，work 可能为 null）
+  const allImages = work ? (
+    work.cover_bg && work.cover_emoji
+      ? ['emoji-cover', ...(work.images || [])]
+      : work.cover_url && work.cover_url !== 'emoji-cover'
+        ? [work.cover_url, ...(work.images || []).filter(url => url !== work.cover_url)]
+        : work.images || []
+  ) : []
+  const imageCount = allImages.filter(img => img !== 'emoji-cover').length
+
+  // 预览模态框键盘事件（必须在条件返回之前调用）
+  useEffect(() => {
+    if (!showPreview) return
+    function handleKey(e) {
+      if (e.key === 'Escape') setShowPreview(false)
+      if (e.key === 'ArrowLeft') setCurrentImage(prev => prev === 0 ? allImages.length - 1 : prev - 1)
+      if (e.key === 'ArrowRight') setCurrentImage(prev => prev === allImages.length - 1 ? 0 : prev + 1)
+    }
+    document.addEventListener('keydown', handleKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = ''
+    }
+  }, [showPreview, allImages.length])
+
+  function handlePrevImage() {
+    setCurrentImage(prev => prev === 0 ? allImages.length - 1 : prev - 1)
+  }
+
+  function handleNextImage() {
+    setCurrentImage(prev => prev === allImages.length - 1 ? 0 : prev + 1)
+  }
+
+  function openPreview() {
+    if (imageCount > 0 && allImages[currentImage] !== 'emoji-cover') {
+      setShowPreview(true)
+    }
+  }
 
   if (loading) {
     return (
@@ -88,43 +118,7 @@ function WorkDetail() {
     )
   }
 
-  const isEmojiCover = work.cover_bg && work.cover_emoji
-  const allImages = isEmojiCover
-    ? ['emoji-cover', ...(work.images || [])]
-    : work.cover_url && work.cover_url !== 'emoji-cover'
-      ? [work.cover_url, ...(work.images || []).filter(url => url !== work.cover_url)]
-      : work.images || []
   const thumbnailImages = allImages
-
-  function handlePrevImage() {
-    setCurrentImage(prev => prev === 0 ? allImages.length - 1 : prev - 1)
-  }
-
-  function handleNextImage() {
-    setCurrentImage(prev => prev === allImages.length - 1 ? 0 : prev + 1)
-  }
-
-  function openPreview() {
-    if (allImages.length > 0 && allImages[currentImage] !== 'emoji-cover') {
-      setShowPreview(true)
-    }
-  }
-
-  // 预览模态框键盘事件
-  useEffect(() => {
-    if (!showPreview) return
-    function handleKey(e) {
-      if (e.key === 'Escape') setShowPreview(false)
-      if (e.key === 'ArrowLeft') handlePrevImage()
-      if (e.key === 'ArrowRight') handleNextImage()
-    }
-    document.addEventListener('keydown', handleKey)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handleKey)
-      document.body.style.overflow = ''
-    }
-  }, [showPreview])
 
   async function handleDelete() {
     setDeleting(true)
@@ -147,7 +141,7 @@ function WorkDetail() {
       >
         {/* 图片画廊 */}
         <div className="work-detail-gallery">
-          <div className="work-detail-main-image" onClick={openPreview} style={{ cursor: allImages.length > 0 && allImages[currentImage] !== 'emoji-cover' ? 'zoom-in' : 'default' }}>
+          <div className="work-detail-main-image" onClick={openPreview} style={{ cursor: imageCount > 0 ? 'zoom-in' : 'default' }}>
             <AnimatePresence mode="wait">
               {isEmojiCover && currentImage === 0 ? (
                 <motion.div
@@ -182,7 +176,7 @@ function WorkDetail() {
             </AnimatePresence>
 
             {/* 缩放提示图标 */}
-            {allImages.length > 0 && allImages[currentImage] !== 'emoji-cover' && (
+            {imageCount > 0 && allImages[currentImage] !== 'emoji-cover' && (
               <div className="work-detail-zoom-hint">
                 <ZoomIn size={20} />
               </div>
@@ -190,13 +184,13 @@ function WorkDetail() {
 
             {allImages.length > 1 && (
               <>
-                <button className="work-detail-nav work-detail-nav--prev" onClick={handlePrevImage}>
+                <button className="work-detail-nav work-detail-nav--prev" onClick={(e) => { e.stopPropagation(); handlePrevImage() }}>
                   <ChevronLeft size={24} />
                 </button>
-                <button className="work-detail-nav work-detail-nav--next" onClick={handleNextImage}>
+                <button className="work-detail-nav work-detail-nav--next" onClick={(e) => { e.stopPropagation(); handleNextImage() }}>
                   <ChevronRight size={24} />
                 </button>
-                <div className="work-detail-dots">
+                <div className="work-detail-dots" onClick={(e) => e.stopPropagation()}>
                   {allImages.map((_, index) => (
                     <button
                       key={index}
@@ -502,7 +496,7 @@ function WorkDetail() {
               onClick={(e) => e.stopPropagation()}
             />
 
-            {allImages.filter(img => img !== 'emoji-cover').length > 1 && (
+            {imageCount > 1 && (
               <>
                 <button className="image-preview-nav image-preview-nav--prev" onClick={(e) => { e.stopPropagation(); handlePrevImage() }}>
                   <ChevronLeft size={32} />
