@@ -435,6 +435,9 @@
 }
 
 .work-detail-tool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: var(--space-1) var(--space-3);
   background: var(--accent-primary-bg);
   border: 1px solid var(--accent-primary-border);

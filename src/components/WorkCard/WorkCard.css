@@ -481,6 +481,9 @@
 }
 
 .work-card-tool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10px;
   font-weight: 600;
   padding: 1px 6px;
