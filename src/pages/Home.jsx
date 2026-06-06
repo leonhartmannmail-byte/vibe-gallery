@@ -5,6 +5,7 @@ import { Sparkles, Flame, ArrowRight, Bot, Zap, Rocket, Eye, FlaskConical, Star,
 import { Cursor as LobeCursor, ClaudeCode as LobeClaudeCode } from '@lobehub/icons'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 import { sbQuery } from '../lib/supabase'
 import WorkCard from '../components/WorkCard/WorkCard'
 import FilterBar from '../components/FilterBar/FilterBar'
@@ -56,6 +57,9 @@ function splitByPlatform(works) {
 function Home() {
   const { t } = useLanguage()
   const { fetchWorksByIds } = useWorks()
+
+  // 恢复从详情页返回时的滚动位置
+  useScrollRestoration('home')
 
   const [featuredByPlatform, setFeaturedByPlatform] = useState(null)
   const [trendingByPlatform, setTrendingByPlatform] = useState(null)

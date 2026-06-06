@@ -5,6 +5,7 @@ import { ExternalLink, Tag, ChevronLeft, ChevronRight, Edit3, Trash2, Wrench, Bo
 import { useAuth } from '../hooks/useAuth'
 import { useWorks } from '../hooks/useWorks'
 import { useLanguage } from '../hooks/useLanguage'
+import { useScrollToTopOnRouteChange } from '../hooks/useScrollRestoration'
 import { getWorkMetadata } from '../utils/workMetadata'
 import { getToolConfig, getModelConfig } from '../config/enums'
 import { getToolIcon, getModelIcon } from '../utils/lobeIcons'
@@ -20,6 +21,9 @@ function WorkDetail() {
   const { user } = useAuth()
   const { fetchWork, deleteWork, fetchRelatedWorks } = useWorks()
   const { t, locale } = useLanguage()
+
+  // 从其他详情页跳转过来时滚动到顶部
+  useScrollToTopOnRouteChange()
   const [work, setWork] = useState(null)
   const [loading, setLoading] = useState(true)
   const [currentImage, setCurrentImage] = useState(0)
