@@ -52,6 +52,8 @@ function WorkDetail() {
     return () => { cancelled = true }
   }, [id, fetchWork, fetchRelatedWorks])
 
+  const isEmojiCover = !!(work && work.cover_bg && work.cover_emoji)
+
   // 图片列表（安全计算，work 可能为 null）
   const allImages = work ? (
     work.cover_bg && work.cover_emoji
