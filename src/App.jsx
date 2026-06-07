@@ -66,6 +66,9 @@ function App() {
                   <Route path="home-config" element={<AdminHomeConfig />} />
                 </Route>
 
+                {/* Auth — fullscreen, no Navbar */}
+                <Route path="/auth" element={<Auth />} />
+
                 {/* Public routes — with Navbar */}
                 <Route path="*" element={
                   <>
@@ -73,7 +76,6 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/explore" element={<Explore />} />
-                      <Route path="/auth" element={<Auth />} />
                       <Route path="/auth/confirmed" element={<AuthConfirm />} />
                       <Route path="/publish" element={<Publish />} />
                       <Route path="/edit/:id" element={<EditWork />} />
