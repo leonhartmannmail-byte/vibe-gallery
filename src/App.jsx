@@ -36,6 +36,7 @@ const AdminPrompts = lazy(() => import('./pages/admin/AdminPrompts'))
 const AdminMcp = lazy(() => import('./pages/admin/AdminMcp'))
 const AdminSkills = lazy(() => import('./pages/admin/AdminSkills'))
 const AdminHomeConfig = lazy(() => import('./pages/admin/AdminHomeConfig'))
+const AdminNavConfig = lazy(() => import('./pages/admin/AdminNavConfig'))
 const AdminSiteConfig = lazy(() => import('./pages/admin/AdminSiteConfig'))
 
 function LoadingFallback() {
@@ -65,6 +66,7 @@ function App() {
                   <Route path="mcp" element={<AdminMcp />} />
                   <Route path="skills" element={<AdminSkills />} />
                   <Route path="home-config" element={<AdminHomeConfig />} />
+                  <Route path="navbar-config" element={<AdminNavConfig />} />
                   <Route path="site-config" element={<AdminSiteConfig />} />
                 </Route>
 

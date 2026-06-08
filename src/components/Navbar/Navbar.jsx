@@ -1,11 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, LogOut, User, Sun, Moon, Compass, Shield, Menu, X } from 'lucide-react'
+import { Plus, LogOut, User, Sun, Moon, Compass, Shield, Menu, X, MessageSquare, Wrench, Server } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../hooks/useTheme'
 import { useLanguage } from '../../hooks/useLanguage'
+import { sbQuery } from '../../lib/supabase'
 import './Navbar.css'
+
+// 图标映射
+const ICON_MAP = {
+  compass: Compass,
+  'message-square': MessageSquare,
+  wrench: Wrench,
+  server: Server,
+}
 
 function Navbar() {
   const { user, profile, loading, signOut } = useAuth()
@@ -15,6 +24,7 @@ function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [navLinks, setNavLinks] = useState([])
   const avatarRef = useRef(null)
 
   useEffect(() => {
@@ -23,6 +33,19 @@ function Navbar() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // 获取导航链接配置
+  useEffect(() => {
+    async function loadNavLinks() {
+      try {
+        const data = await sbQuery('navbar_config', { params: '?select=*&is_visible=eq.true&order=sort_order.asc' })
+        setNavLinks(data || [])
+      } catch (err) {
+        console.error('加载导航配置失败:', err)
+      }
+    }
+    loadNavLinks()
   }, [])
 
   useEffect(() => {
@@ -60,6 +83,14 @@ function Navbar() {
     navigate('/')
   }
 
+  // 解析导航链接标题（多语言）
+  function resolveNavTitle(link) {
+    if (locale === 'en') {
+      return link.config?.name_en || link.module_name
+    }
+    return link.module_name
+  }
+
   return (
     <motion.nav
       className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}
@@ -76,6 +107,19 @@ function Navbar() {
             <Compass size={16} />
             <span>{t('navbar.explore')}</span>
           </Link>
+          {navLinks.map(link => {
+            const Icon = ICON_MAP[link.icon_key] || Compass
+            return (
+              <Link
+                key={link.module_key}
+                to={link.route_path}
+                className="navbar-nav-link"
+              >
+                <Icon size={16} />
+                <span>{resolveNavTitle(link)}</span>
+              </Link>
+            )
+          })}
         </div>
 
         {/* 移动端汉堡菜单按钮 */}
@@ -188,6 +232,22 @@ function Navbar() {
                 <Compass size={18} />
                 {t('navbar.explore')}
               </Link>
+
+              {/* 动态导航链接 */}
+              {navLinks.map(link => {
+                const Icon = ICON_MAP[link.icon_key] || Compass
+                return (
+                  <Link
+                    key={link.module_key}
+                    to={link.route_path}
+                    className="navbar-mobile-link"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <Icon size={18} />
+                    {resolveNavTitle(link)}
+                  </Link>
+                )
+              })}
 
               {user ? (
                 <>

@@ -19,6 +19,10 @@ const zh = {
   'navbar.themeToLight': '切换到亮色模式',
   'navbar.themeToDark': '切换到暗色模式',
   'navbar.explore': '探索',
+  'navbar.navSites': 'AI 导航',
+  'navbar.aiPrompts': 'AI 提示词',
+  'navbar.skills': 'Skills',
+  'navbar.mcp': 'MCP',
 
   // Home
   'home.heroTagline': 'AI 创作者灵感社区',

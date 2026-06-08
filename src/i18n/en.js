@@ -19,6 +19,10 @@ const en = {
   'navbar.themeToLight': 'Switch to light mode',
   'navbar.themeToDark': 'Switch to dark mode',
   'navbar.explore': 'Explore',
+  'navbar.navSites': 'AI Navigator',
+  'navbar.aiPrompts': 'AI Prompts',
+  'navbar.skills': 'Skills',
+  'navbar.mcp': 'MCP',
 
   // Home
   'home.heroTagline': 'The Home of AI Creators',

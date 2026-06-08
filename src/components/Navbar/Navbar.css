@@ -74,6 +74,27 @@
   color: var(--text-primary);
 }
 
+.navbar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.navbar-nav-link:hover {
+  color: var(--text-primary);
+}
+
+.navbar-nav-link span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .navbar-actions {
   display: flex;
   align-items: center;
@@ -334,6 +355,11 @@
   }
 
   .navbar-explore-link span {
+    display: none;
+  }
+
+  /* 桌面端导航链接在移动端隐藏（在汉堡菜单中展示） */
+  .navbar-nav-link {
     display: none;
   }
 

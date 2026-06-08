@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom'
 import { 
   LayoutDashboard, Image, Star, Users, Compass, MessageSquare, 
-  Server, Wrench, Settings, Shield, Home, Menu, X, ChevronLeft
+  Server, Wrench, Settings, Shield, Home, Menu, X, ChevronLeft, Navigation
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import './AdminLayout.css'
@@ -12,13 +12,14 @@ const navItems = [
   { path: '/admin/works', icon: Image, label: '作品管理' },
   { path: '/admin/recommendations', icon: Star, label: '作品推荐' },
   { path: '/admin/accounts', icon: Users, label: '账号管理' },
-  { type: 'divider', label: '首页内容' },
+  { type: 'divider', label: '内容管理' },
   { path: '/admin/nav-sites', icon: Compass, label: '导航网站' },
   { path: '/admin/prompts', icon: MessageSquare, label: 'AI 提示词' },
   { path: '/admin/mcp', icon: Server, label: 'MCP 服务' },
   { path: '/admin/skills', icon: Wrench, label: 'Skills 技能' },
-  { type: 'divider', label: '系统' },
+  { type: 'divider', label: '系统配置' },
   { path: '/admin/home-config', icon: Settings, label: '首页配置' },
+  { path: '/admin/navbar-config', icon: Navigation, label: '导航栏配置' },
   { path: '/admin/site-config', icon: Shield, label: '登录配置' },
 ]
 
