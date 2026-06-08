@@ -177,6 +177,72 @@ function DynamicModules({ homeConfig, featuredByPlatform, trendingByPlatform, to
   })
 }
 
+// ====== 首页骨架屏 ======
+function HomeSkeleton() {
+  return (
+    <div className="home-skeleton">
+      {/* Hero 骨架 */}
+      <div className="home-skel-hero">
+        <div className="skeleton home-skel-tagline" />
+        <div className="skeleton home-skel-title" />
+        <div className="skeleton home-skel-title home-skel-title--short" />
+        <div className="skeleton home-skel-subtitle" />
+        <div className="skeleton home-skel-cta" />
+      </div>
+
+      {/* Filter Bar 骨架 */}
+      <div className="home-skel-filter">
+        <div className="skeleton home-skel-filter-item" />
+        <div className="skeleton home-skel-filter-item" />
+        <div className="skeleton home-skel-filter-item" />
+        <div className="skeleton home-skel-filter-item" />
+      </div>
+
+      {/* Trending Tags 骨架 */}
+      <div className="home-skel-tags">
+        <div className="skeleton home-skel-tag" />
+        <div className="skeleton home-skel-tag" />
+        <div className="skeleton home-skel-tag" />
+        <div className="skeleton home-skel-tag" />
+        <div className="skeleton home-skel-tag" />
+        <div className="skeleton home-skel-tag" />
+      </div>
+
+      {/* Section 骨架 */}
+      <div className="home-skel-section">
+        <div className="skeleton home-skel-section-title" />
+        <div className="home-skel-grid">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="home-skel-card">
+              <div className="skeleton home-skel-card-img" />
+              <div className="home-skel-card-body">
+                <div className="skeleton home-skel-card-title" />
+                <div className="skeleton home-skel-card-meta" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Creators 骨架 */}
+      <div className="home-skel-section">
+        <div className="skeleton home-skel-section-title" />
+        <div className="home-skel-creators">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="home-skel-creator">
+              <div className="skeleton home-skel-creator-avatar" />
+              <div className="home-skel-creator-info">
+                <div className="skeleton home-skel-creator-name" />
+                <div className="skeleton home-skel-creator-meta" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Home() {
   const { t } = useLanguage()
   const { fetchWorksByIds } = useWorks()
@@ -268,6 +334,16 @@ function Home() {
     }
     load()
   }, [fetchWorksByIds])
+
+  // Loading 骨架屏
+  if (loading) {
+    return (
+      <div className="home-page">
+        <GridBackground />
+        <HomeSkeleton />
+      </div>
+    )
+  }
 
   return (
     <div className="home-page">
