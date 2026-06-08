@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Compass, Search, ExternalLink, Loader2 } from 'lucide-react'
 import { usePaginatedList } from '../hooks/usePaginatedList'
-import { getBrandIcon } from '../utils/lobeIcons'
+import { getBrandIcon, getFaviconUrl } from '../utils/lobeIcons'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
@@ -10,6 +10,26 @@ function NavSites() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [failedIcons, setFailedIcons] = useState(new Set())
+
+  const handleIconError = useCallback((id) => {
+    setFailedIcons(prev => new Set(prev).add(id))
+  }, [])
+
+  const renderIcon = useCallback((item) => {
+    // 1. 优先使用 icon_url（未失败时）
+    if (item.icon_url && !failedIcons.has(item.id)) {
+      return <img src={item.icon_url} alt="" onError={() => handleIconError(item.id)} />
+    }
+    // 2. 尝试 lobe 品牌图标
+    const BIcon = getBrandIcon(item.name)
+    if (BIcon) return <BIcon size={28} />
+    // 3. 尝试网站 favicon
+    const favicon = getFaviconUrl(item.url)
+    if (favicon) return <img src={favicon} alt="" className="favicon-icon" />
+    // 4. 最终兜底：首字母
+    return <span>{item.name[0]}</span>
+  }, [failedIcons, handleIconError])
 
   // 搜索防抖 300ms
   useEffect(() => {
@@ -58,7 +78,7 @@ function NavSites() {
                 <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer" className="listing-card" style={{ animationDelay: `${Math.min(i, 49) * 0.02}s` }}>
                   {item.is_recommended && <div className="listing-card-badge">推荐</div>}
                   <div className="listing-card-icon">
-                    {item.icon_url ? <img src={item.icon_url} alt="" /> : (() => { const BIcon = getBrandIcon(item.name); return BIcon ? <BIcon size={28} /> : <span>{item.name[0]}</span> })()}
+                    {renderIcon(item)}
                   </div>
                   <div className="listing-card-body">
                     <div className="listing-card-name">{item.name} <ExternalLink size={11} className="listing-card-ext" /></div>

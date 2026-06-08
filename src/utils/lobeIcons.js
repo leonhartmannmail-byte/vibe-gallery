@@ -157,3 +157,18 @@ export function getModelIcon(modelName) {
 export function getBrandIcon(name) {
   return BRAND_ICON_MAP[name] || null
 }
+
+/**
+ * 从 URL 提取域名，返回 Google Favicon 服务地址
+ * @param {string} url - 网站 URL
+ * @returns {string|null} favicon URL 或 null
+ */
+export function getFaviconUrl(url) {
+  if (!url) return null
+  try {
+    const domain = new URL(url).hostname
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+  } catch {
+    return null
+  }
+}

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Server, Search, ExternalLink, Loader2 } from 'lucide-react'
 import { usePaginatedList } from '../hooks/usePaginatedList'
-import { getBrandIcon } from '../utils/lobeIcons'
+import { getBrandIcon, getFaviconUrl } from '../utils/lobeIcons'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
@@ -16,6 +16,22 @@ function McpServers() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [failedIcons, setFailedIcons] = useState(new Set())
+
+  const handleIconError = useCallback((id) => {
+    setFailedIcons(prev => new Set(prev).add(id))
+  }, [])
+
+  const renderIcon = useCallback((item) => {
+    if (item.icon_url && !failedIcons.has(item.id)) {
+      return <img src={item.icon_url} alt="" onError={() => handleIconError(item.id)} />
+    }
+    const BIcon = getBrandIcon(item.name)
+    if (BIcon) return <BIcon size={28} />
+    const favicon = getFaviconUrl(item.url)
+    if (favicon) return <img src={favicon} alt="" className="favicon-icon" />
+    return <span>{item.name[0]}</span>
+  }, [failedIcons, handleIconError])
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300)
@@ -64,7 +80,7 @@ function McpServers() {
                 <Link key={item.id} to={`/mcp/${item.id}`} className="listing-card" style={{ animationDelay: `${Math.min(i, 49) * 0.02}s` }}>
                   {item.is_recommended && <div className="listing-card-badge">推荐</div>}
                   <div className="listing-card-icon">
-                    {item.icon_url ? <img src={item.icon_url} alt="" /> : (() => { const BIcon = getBrandIcon(item.name); return BIcon ? <BIcon size={28} /> : <span>{item.name[0]}</span> })()}
+                    {renderIcon(item)}
                   </div>
                   <div className="listing-card-body">
                     <div className="listing-card-name">

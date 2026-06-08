@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Wrench, Search, ExternalLink, Loader2 } from 'lucide-react'
@@ -16,6 +16,18 @@ function Skills() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [failedIcons, setFailedIcons] = useState(new Set())
+
+  const handleIconError = useCallback((id) => {
+    setFailedIcons(prev => new Set(prev).add(id))
+  }, [])
+
+  const renderIcon = useCallback((item) => {
+    if (item.icon_url && !failedIcons.has(item.id)) {
+      return <img src={item.icon_url} alt="" onError={() => handleIconError(item.id)} />
+    }
+    return <span>{item.name[0]}</span>
+  }, [failedIcons, handleIconError])
 
   // 恢复从详情页返回时的滚动位置
   useScrollRestoration('skills')
@@ -67,7 +79,7 @@ function Skills() {
                 <Link key={item.id} to={`/skills/${item.id}`} className="listing-card" style={{ animationDelay: `${Math.min(i, 49) * 0.02}s` }}>
                   {item.is_recommended && <div className="listing-card-badge">推荐</div>}
                   <div className="listing-card-icon">
-                    {item.icon_url ? <img src={item.icon_url} alt="" /> : <span>{item.name[0]}</span>}
+                    {renderIcon(item)}
                   </div>
                   <div className="listing-card-body">
                     <div className="listing-card-name">
