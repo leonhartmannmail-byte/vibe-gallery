@@ -3,8 +3,26 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Compass, MessageSquare, Server, Wrench, ArrowRight, ExternalLink } from 'lucide-react'
 import { sbQuery } from '../../lib/supabase'
-import { getBrandIcon } from '../../utils/lobeIcons'
+import { getBrandIcon, getFaviconUrl } from '../../utils/lobeIcons'
 import './HomeModules.css'
+
+// ====== 带图标回退的卡片图标组件 ======
+function SiteIcon({ site }) {
+  const [imgFailed, setImgFailed] = useState(false)
+
+  // 1. 优先使用 icon_url（未失败时）
+  if (site.icon_url && !imgFailed) {
+    return <img src={site.icon_url} alt="" onError={() => setImgFailed(true)} />
+  }
+  // 2. 尝试 lobe 品牌图标
+  const BrandIcon = getBrandIcon(site.name)
+  if (BrandIcon) return <BrandIcon size={24} />
+  // 3. 尝试网站 favicon
+  const favicon = getFaviconUrl(site.url)
+  if (favicon) return <img src={favicon} alt="" className="favicon-icon" />
+  // 4. 最终兜底：首字母
+  return <span>{site.name[0]}</span>
+}
 
 // ====== 导航网站推荐 ======
 export function NavSitesSection({ delay = 0.5, title, subtitle }) {
@@ -44,11 +62,7 @@ export function NavSitesSection({ delay = 0.5, title, subtitle }) {
           >
             {site.is_recommended && <div className="home-module-card-recommended">推荐</div>}
             <div className="home-module-card-icon">
-              {site.icon_url ? (
-                <img src={site.icon_url} alt="" />
-              ) : (
-                (() => { const BrandIcon = getBrandIcon(site.name); return BrandIcon ? <BrandIcon size={24} /> : <span>{site.name[0]}</span> })()
-              )}
+              <SiteIcon site={site} />
             </div>
             <div className="home-module-card-body">
               <div className="home-module-card-name">

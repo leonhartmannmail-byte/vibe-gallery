@@ -76,6 +76,10 @@ a.home-module-card--skill {
   object-fit: cover;
 }
 
+.home-module-card-icon img.favicon-icon {
+  object-fit: contain;
+}
+
 .home-module-card-icon span {
   font-size: 15px;
   font-weight: 700;
