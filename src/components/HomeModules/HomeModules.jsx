@@ -7,7 +7,7 @@ import { getBrandIcon } from '../../utils/lobeIcons'
 import './HomeModules.css'
 
 // ====== 导航网站推荐 ======
-export function NavSitesSection({ delay = 0.5 }) {
+export function NavSitesSection({ delay = 0.5, title, subtitle }) {
   const [sites, setSites] = useState([])
 
   useEffect(() => {
@@ -27,8 +27,8 @@ export function NavSitesSection({ delay = 0.5 }) {
     >
       <div className="home-section-header">
         <Compass size={20} className="home-section-icon home-section-icon--nav" />
-        <h2>导航网站推荐</h2>
-        <span className="home-section-subtitle">精选 AI 工具与网站</span>
+        <h2>{title || '导航网站推荐'}</h2>
+        <span className="home-section-subtitle">{subtitle || '精选 AI 工具与网站'}</span>
         <Link to="/nav-sites" className="home-section-view-all">
           查看全部 <ArrowRight size={14} />
         </Link>
@@ -66,7 +66,7 @@ export function NavSitesSection({ delay = 0.5 }) {
 }
 
 // ====== AI 提示词 ======
-export function PromptsSection({ delay = 0.55 }) {
+export function PromptsSection({ delay = 0.55, title, subtitle }) {
   const [prompts, setPrompts] = useState([])
 
   useEffect(() => {
@@ -86,8 +86,8 @@ export function PromptsSection({ delay = 0.55 }) {
     >
       <div className="home-section-header">
         <MessageSquare size={20} className="home-section-icon home-section-icon--prompt" />
-        <h2>AI 提示词</h2>
-        <span className="home-section-subtitle">高质量 Prompt 精选</span>
+        <h2>{title || 'AI 提示词'}</h2>
+        <span className="home-section-subtitle">{subtitle || '高质量 Prompt 精选'}</span>
         <Link to="/prompts" className="home-section-view-all">
           查看全部 <ArrowRight size={14} />
         </Link>
@@ -116,7 +116,7 @@ export function PromptsSection({ delay = 0.55 }) {
 }
 
 // ====== MCP 服务 ======
-export function McpSection({ delay = 0.6 }) {
+export function McpSection({ delay = 0.6, title, subtitle }) {
   const [servers, setServers] = useState([])
 
   useEffect(() => {
@@ -136,8 +136,8 @@ export function McpSection({ delay = 0.6 }) {
     >
       <div className="home-section-header">
         <Server size={20} className="home-section-icon home-section-icon--mcp" />
-        <h2>MCP 服务</h2>
-        <span className="home-section-subtitle">Model Context Protocol 工具集</span>
+        <h2>{title || 'MCP 服务'}</h2>
+        <span className="home-section-subtitle">{subtitle || 'Model Context Protocol 工具集'}</span>
         <Link to="/mcp" className="home-section-view-all">
           查看全部 <ArrowRight size={14} />
         </Link>
@@ -166,7 +166,7 @@ export function McpSection({ delay = 0.6 }) {
 }
 
 // ====== Skills 技能 ======
-export function SkillsSection({ delay = 0.65 }) {
+export function SkillsSection({ delay = 0.65, title, subtitle }) {
   const [skills, setSkills] = useState([])
 
   useEffect(() => {
@@ -186,8 +186,8 @@ export function SkillsSection({ delay = 0.65 }) {
     >
       <div className="home-section-header">
         <Wrench size={20} className="home-section-icon home-section-icon--skills" />
-        <h2>Skills 技能</h2>
-        <span className="home-section-subtitle">AI Agent 能力模块</span>
+        <h2>{title || 'Skills 技能'}</h2>
+        <span className="home-section-subtitle">{subtitle || 'AI Agent 能力模块'}</span>
         <Link to="/skills" className="home-section-view-all">
           查看全部 <ArrowRight size={14} />
         </Link>

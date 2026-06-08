@@ -11,7 +11,6 @@ import WorkCard from '../components/WorkCard/WorkCard'
 import FilterBar from '../components/FilterBar/FilterBar'
 import GridBackground from '../components/Background/GridBackground'
 import SplashCursor from '../components/SplashCursor/SplashCursor'
-import { FEATURED_WORK_IDS } from '../config/featured'
 import { NavSitesSection, PromptsSection, McpSection, SkillsSection } from '../components/HomeModules/HomeModules'
 import './Home.css'
 
@@ -54,6 +53,130 @@ function splitByPlatform(works) {
   return result
 }
 
+// ====== 精选作品模块 ======
+function FeaturedSection({ data, delay = 0.25, title }) {
+  const { t } = useLanguage()
+  const [activeTab, setActiveTab] = useState('web')
+  if (!data || (data.web.length === 0 && data.mobile.length === 0)) return null
+  return (
+    <motion.section className="home-section" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay }}>
+      <div className="home-section-header">
+        <Star size={20} className="home-section-icon" />
+        <h2>{title || t('home.featured')}</h2>
+        <span className="home-section-subtitle">{t('home.editorPicks')}</span>
+      </div>
+      <div className="home-section-tabs">
+        <button className={`home-section-tab ${activeTab === 'web' ? 'active' : ''}`} onClick={() => setActiveTab('web')}><Monitor size={14} /><span>Web & Desktop</span></button>
+        <button className={`home-section-tab ${activeTab === 'mobile' ? 'active' : ''}`} onClick={() => setActiveTab('mobile')}><Smartphone size={14} /><span>Mobile Apps</span></button>
+      </div>
+      <div className="home-works-grid">
+        {(activeTab === 'web' ? data.web : data.mobile).slice(0, 10).map((work, i) => (
+          <div key={work.id} className="home-works-grid-item"><WorkCard work={work} index={i} /></div>
+        ))}
+      </div>
+    </motion.section>
+  )
+}
+
+// ====== 本周热门模块 ======
+function TrendingSection({ data, delay = 0.35, title }) {
+  const { t } = useLanguage()
+  const [activeTab, setActiveTab] = useState('web')
+  if (!data || (data.web.length === 0 && data.mobile.length === 0)) return null
+  return (
+    <motion.section className="home-section" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay }}>
+      <div className="home-section-header">
+        <Flame size={20} className="home-section-icon home-section-icon--trending" />
+        <h2>{title || t('home.trendingThisWeek')}</h2>
+        <Link to="/explore?sort=popular" className="home-section-view-all">{t('home.viewAll')} <ArrowRight size={14} /></Link>
+      </div>
+      <div className="home-section-tabs">
+        <button className={`home-section-tab ${activeTab === 'web' ? 'active' : ''}`} onClick={() => setActiveTab('web')}><Monitor size={14} /><span>Web & Desktop</span></button>
+        <button className={`home-section-tab ${activeTab === 'mobile' ? 'active' : ''}`} onClick={() => setActiveTab('mobile')}><Smartphone size={14} /><span>Mobile Apps</span></button>
+      </div>
+      <div className="home-works-grid">
+        {(activeTab === 'web' ? data.web : data.mobile).slice(0, 10).map((work, i) => (
+          <div key={work.id} className="home-works-grid-item"><WorkCard work={work} index={i} /></div>
+        ))}
+      </div>
+    </motion.section>
+  )
+}
+
+// ====== 活跃创作者模块 ======
+function CreatorsSection({ creators, delay = 0.45, title }) {
+  const { t } = useLanguage()
+  if (!creators || creators.length === 0) return null
+  return (
+    <motion.section className="home-section home-section--creators" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay }}>
+      <div className="home-section-header">
+        <Trophy size={20} className="home-section-icon home-section-icon--creators" />
+        <h2>{title || t('home.topCreators')}</h2>
+      </div>
+      <div className="creator-leaderboard">
+        {creators.map((creator, i) => (
+          <Link key={creator.userId} to={`/profile/${creator.userId}`} className="creator-rank-row">
+            <span className={`creator-rank-num creator-rank-num--${i + 1}`}>
+              {i < 3 ? (() => { const I = RANK_ICONS[i]; return <I size={16} /> })() : `#${i + 1}`}
+            </span>
+            <div className="creator-rank-avatar">
+              {creator.profile?.avatar_url ? <img src={creator.profile.avatar_url} alt="" /> : <span>{(creator.profile?.username || '?')[0].toUpperCase()}</span>}
+            </div>
+            <div className="creator-rank-info">
+              <span className="creator-rank-name">{creator.profile?.username || t('common.anonymous')}</span>
+              <span className="creator-rank-meta">{t('home.worksCount', { n: creator.workCount })} · {creator.totalLikes} {t('home.totalLikes')}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </motion.section>
+  )
+}
+
+// ====== 所有模块动态排序渲染 ======
+function DynamicModules({ homeConfig, featuredByPlatform, trendingByPlatform, topCreators }) {
+  const { locale } = useLanguage()
+
+  // 根据当前语言解析模块标题
+  function resolveTitle(cfg) {
+    if (locale === 'en') {
+      // 优先使用自定义英文名称，否则返回 null 让组件使用内置 i18n 默认值
+      return cfg.config?.name_en || null
+    }
+    // 中文：直接使用 module_name
+    return cfg.module_name
+  }
+
+  // 构建包含所有模块的排序列表
+  const allModules = Object.values(homeConfig)
+    .filter(c => c.is_visible !== false)
+    .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999))
+
+  const delayBase = 0.25
+  return allModules.map((cfg, i) => {
+    const delay = delayBase + i * 0.05
+    const title = resolveTitle(cfg)
+    switch (cfg.module_key) {
+      case 'featured':
+        return <FeaturedSection key="featured" data={featuredByPlatform} delay={delay} title={title} />
+      case 'trending':
+        return <TrendingSection key="trending" data={trendingByPlatform} delay={delay} title={title} />
+      case 'creators':
+        return <CreatorsSection key="creators" creators={topCreators} delay={delay} title={title} />
+      case 'nav_sites':
+        return <NavSitesSection key="nav_sites" delay={delay} title={title} />
+      case 'ai_prompts':
+        return <PromptsSection key="ai_prompts" delay={delay} title={title} />
+      case 'mcp_servers':
+        return <McpSection key="mcp_servers" delay={delay} title={title} />
+      case 'skills':
+        return <SkillsSection key="skills" delay={delay} title={title} />
+      default:
+        return null
+    }
+  })
+}
+
 function Home() {
   const { t } = useLanguage()
   const { fetchWorksByIds } = useWorks()
@@ -65,8 +188,6 @@ function Home() {
   const [trendingByPlatform, setTrendingByPlatform] = useState(null)
   const [topCreators, setTopCreators] = useState([])
   const [homeConfig, setHomeConfig] = useState({})
-  const [activeFeaturedTab, setActiveFeaturedTab] = useState('web')
-  const [activeTrendingTab, setActiveTrendingTab] = useState('web')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -218,140 +339,13 @@ function Home() {
         </div>
       </motion.section>
 
-      {/* Featured Works */}
-      {homeConfig.featured?.is_visible !== false && featuredByPlatform && (featuredByPlatform.web.length > 0 || featuredByPlatform.mobile.length > 0) && (
-        <motion.section
-          className="home-section"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.25 }}
-        >
-          <div className="home-section-header">
-            <Star size={20} className="home-section-icon" />
-            <h2>{t('home.featured')}</h2>
-            <span className="home-section-subtitle">{t('home.editorPicks')}</span>
-          </div>
-          <div className="home-section-tabs">
-            <button
-              className={`home-section-tab ${activeFeaturedTab === 'web' ? 'active' : ''}`}
-              onClick={() => setActiveFeaturedTab('web')}
-            >
-              <Monitor size={14} />
-              <span>Web & Desktop</span>
-            </button>
-            <button
-              className={`home-section-tab ${activeFeaturedTab === 'mobile' ? 'active' : ''}`}
-              onClick={() => setActiveFeaturedTab('mobile')}
-            >
-              <Smartphone size={14} />
-              <span>Mobile Apps</span>
-            </button>
-          </div>
-          <div className="home-works-grid">
-            {(activeFeaturedTab === 'web' ? featuredByPlatform.web : featuredByPlatform.mobile).slice(0, 10).map((work, i) => (
-              <div key={work.id} className="home-works-grid-item">
-                <WorkCard work={work} index={i} />
-              </div>
-            ))}
-          </div>
-        </motion.section>
-      )}
-
-      {/* Trending This Week */}
-      {homeConfig.trending?.is_visible !== false && trendingByPlatform && (trendingByPlatform.web.length > 0 || trendingByPlatform.mobile.length > 0) && (
-        <motion.section
-          className="home-section"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.35 }}
-        >
-          <div className="home-section-header">
-            <Flame size={20} className="home-section-icon home-section-icon--trending" />
-            <h2>{t('home.trendingThisWeek')}</h2>
-            <Link to="/explore?sort=popular" className="home-section-view-all">
-              {t('home.viewAll')} <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="home-section-tabs">
-            <button
-              className={`home-section-tab ${activeTrendingTab === 'web' ? 'active' : ''}`}
-              onClick={() => setActiveTrendingTab('web')}
-            >
-              <Monitor size={14} />
-              <span>Web & Desktop</span>
-            </button>
-            <button
-              className={`home-section-tab ${activeTrendingTab === 'mobile' ? 'active' : ''}`}
-              onClick={() => setActiveTrendingTab('mobile')}
-            >
-              <Smartphone size={14} />
-              <span>Mobile Apps</span>
-            </button>
-          </div>
-          <div className="home-works-grid">
-            {(activeTrendingTab === 'web' ? trendingByPlatform.web : trendingByPlatform.mobile).slice(0, 10).map((work, i) => (
-              <div key={work.id} className="home-works-grid-item">
-                <WorkCard work={work} index={i} />
-              </div>
-            ))}
-          </div>
-        </motion.section>
-      )}
-
-      {/* Top Creators — Leaderboard */}
-      {homeConfig.creators?.is_visible !== false && topCreators.length > 0 && (
-        <motion.section
-          className="home-section home-section--creators"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.45 }}
-        >
-          <div className="home-section-header">
-            <Trophy size={20} className="home-section-icon home-section-icon--creators" />
-            <h2>{t('home.topCreators')}</h2>
-          </div>
-          <div className="creator-leaderboard">
-            {topCreators.map((creator, i) => (
-              <Link
-                key={creator.userId}
-                to={`/profile/${creator.userId}`}
-                className="creator-rank-row"
-              >
-                <span className={`creator-rank-num creator-rank-num--${i + 1}`}>
-                  {i < 3 ? (() => { const I = RANK_ICONS[i]; return <I size={16} /> })() : `#${i + 1}`}
-                </span>
-                <div className="creator-rank-avatar">
-                  {creator.profile?.avatar_url ? (
-                    <img src={creator.profile.avatar_url} alt="" />
-                  ) : (
-                    <span>{(creator.profile?.username || '?')[0].toUpperCase()}</span>
-                  )}
-                </div>
-                <div className="creator-rank-info">
-                  <span className="creator-rank-name">{creator.profile?.username || t('common.anonymous')}</span>
-                  <span className="creator-rank-meta">
-                    {t('home.worksCount', { n: creator.workCount })} · {creator.totalLikes} {t('home.totalLikes')}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </motion.section>
-      )}
-
-      {/* New Modules — configurable from admin */}
-      {homeConfig.nav_sites?.is_visible !== false && (
-        <NavSitesSection delay={0.5} />
-      )}
-      {homeConfig.ai_prompts?.is_visible !== false && (
-        <PromptsSection delay={0.55} />
-      )}
-      {homeConfig.mcp_servers?.is_visible !== false && (
-        <McpSection delay={0.6} />
-      )}
-      {homeConfig.skills?.is_visible !== false && (
-        <SkillsSection delay={0.65} />
-      )}
+      {/* 所有模块 — 按管理后台 sort_order 动态排序 */}
+      <DynamicModules
+        homeConfig={homeConfig}
+        featuredByPlatform={featuredByPlatform}
+        trendingByPlatform={trendingByPlatform}
+        topCreators={topCreators}
+      />
 
       {/* Explore CTA */}
       <motion.div

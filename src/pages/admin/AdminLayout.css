@@ -581,3 +581,39 @@
   color: #71717a;
   font-size: 14px;
 }
+
+/* Inline input for editing */
+.admin-input {
+  padding: 4px 8px;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 6px;
+  color: #e4e4e7;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #a78bfa;
+}
+
+/* i18n multi-language editing row */
+.admin-i18n-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-i18n-label {
+  flex-shrink: 0;
+  width: 32px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #71717a;
+  text-align: center;
+  background: #27272a;
+  border-radius: 4px;
+  padding: 2px 0;
+  line-height: 1.4;
+}

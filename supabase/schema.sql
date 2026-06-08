@@ -79,6 +79,9 @@ CREATE INDEX IF NOT EXISTS idx_skills_data_active_sort ON skills_data(is_active,
 
 -- 8. 初始化首页模块配置
 INSERT INTO home_config (module_key, module_name, is_visible, sort_order) VALUES
+  ('featured', '精选作品', true, 1),
+  ('trending', '本周热门作品', true, 2),
+  ('creators', '创作者榜单', true, 3),
   ('nav_sites', '导航网站推荐', true, 10),
   ('ai_prompts', 'AI 提示词', true, 20),
   ('mcp_servers', 'MCP 服务', true, 30),
