@@ -76,6 +76,10 @@ const zh = {
   'auth.confirmSubtitle': '你的邮箱已验证通过，现在可以登录了',
   'auth.confirmAutoLogin': '正在自动登录，即将跳转到首页...',
   'auth.confirmProcessing': '正在验证中...',
+  'auth.orContinueWith': '或通过以下方式继续',
+  'auth.continueWithGoogle': 'Google 账号登录',
+  'auth.continueWithGithub': 'GitHub 账号登录',
+  'auth.oauthRedirecting': '正在跳转...',
 
   // Publish
   'publish.noAuth': '请先登录后再发布作品',

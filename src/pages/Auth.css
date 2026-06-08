@@ -395,6 +395,57 @@
 .auth2-submit:hover { opacity: 0.9; }
 .auth2-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* 分割线 */
+.auth2-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 20px;
+}
+.auth2-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+.auth2-divider-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* OAuth 按钮 */
+.auth2-oauth {
+  display: flex;
+  gap: 12px;
+}
+.auth2-oauth-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.auth2-oauth-btn:hover:not(:disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--border-focus);
+}
+.auth2-oauth-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.auth2-oauth-btn svg {
+  flex-shrink: 0;
+}
+
 /* 切换登录/注册 */
 .auth2-switch {
   text-align: center;
@@ -480,5 +531,12 @@
   }
   .auth2-title {
     font-size: 24px;
+  }
+  .auth2-oauth {
+    flex-direction: column;
+  }
+  .auth2-oauth-btn {
+    height: 44px;
+    font-size: 13px;
   }
 }

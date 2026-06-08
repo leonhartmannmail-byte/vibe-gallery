@@ -76,6 +76,10 @@ const en = {
   'auth.confirmSubtitle': 'Your email has been confirmed. You can now log in.',
   'auth.confirmAutoLogin': 'Auto-logging in, redirecting to home...',
   'auth.confirmProcessing': 'Verifying...',
+  'auth.orContinueWith': 'Or continue with',
+  'auth.continueWithGoogle': 'Continue with Google',
+  'auth.continueWithGithub': 'Continue with GitHub',
+  'auth.oauthRedirecting': 'Redirecting...',
 
   // Publish
   'publish.noAuth': 'Please log in before publishing',
