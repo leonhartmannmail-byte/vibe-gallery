@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { useLanguage } from '../hooks/useLanguage'
 import { useExplore } from '../hooks/useExplore'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 import { CONTENT_CATEGORIES, PLATFORM_TYPES, AI_TOOLS } from '../config/enums'
 import MasonryGrid from '../components/MasonryGrid/MasonryGrid'
 import WorkCard from '../components/WorkCard/WorkCard'
@@ -11,6 +12,9 @@ import './Explore.css'
 function Explore() {
   const { t, locale } = useLanguage()
   const { works, loading, hasMore, fetchExplore } = useExplore()
+
+  // 恢复从详情页返回时的滚动位置
+  useScrollRestoration('explore')
 
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState(null)

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom'
 import { 
   LayoutDashboard, Image, Star, Users, Compass, MessageSquare, 
-  Server, Wrench, Settings, Home, Menu, X, ChevronLeft
+  Server, Wrench, Settings, Shield, Home, Menu, X, ChevronLeft
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import './AdminLayout.css'
@@ -19,6 +19,7 @@ const navItems = [
   { path: '/admin/skills', icon: Wrench, label: 'Skills 技能' },
   { type: 'divider', label: '系统' },
   { path: '/admin/home-config', icon: Settings, label: '首页配置' },
+  { path: '/admin/site-config', icon: Shield, label: '登录配置' },
 ]
 
 function AdminLayout() {

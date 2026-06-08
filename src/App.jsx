@@ -36,6 +36,7 @@ const AdminPrompts = lazy(() => import('./pages/admin/AdminPrompts'))
 const AdminMcp = lazy(() => import('./pages/admin/AdminMcp'))
 const AdminSkills = lazy(() => import('./pages/admin/AdminSkills'))
 const AdminHomeConfig = lazy(() => import('./pages/admin/AdminHomeConfig'))
+const AdminSiteConfig = lazy(() => import('./pages/admin/AdminSiteConfig'))
 
 function LoadingFallback() {
   return (
@@ -64,7 +65,11 @@ function App() {
                   <Route path="mcp" element={<AdminMcp />} />
                   <Route path="skills" element={<AdminSkills />} />
                   <Route path="home-config" element={<AdminHomeConfig />} />
+                  <Route path="site-config" element={<AdminSiteConfig />} />
                 </Route>
+
+                {/* Auth — fullscreen, no Navbar */}
+                <Route path="/auth" element={<Auth />} />
 
                 {/* Public routes — with Navbar */}
                 <Route path="*" element={
@@ -73,7 +78,6 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/explore" element={<Explore />} />
-                      <Route path="/auth" element={<Auth />} />
                       <Route path="/auth/confirmed" element={<AuthConfirm />} />
                       <Route path="/publish" element={<Publish />} />
                       <Route path="/edit/:id" element={<EditWork />} />

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Wrench, Search, ExternalLink, Loader2 } from 'lucide-react'
 import { usePaginatedList } from '../hooks/usePaginatedList'
+import { useScrollRestoration } from '../hooks/useScrollRestoration'
 import GridBackground from '../components/Background/GridBackground'
 import './ListingPage.css'
 
@@ -15,6 +16,9 @@ function Skills() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  // 恢复从详情页返回时的滚动位置
+  useScrollRestoration('skills')
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300)
