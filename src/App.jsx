@@ -15,6 +15,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const TagPage = lazy(() => import('./pages/TagPage'))
 const CollectionDetail = lazy(() => import('./pages/CollectionDetail'))
 const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
 const AuthConfirm = lazy(() => import('./pages/AuthConfirm'))
 const Explore = lazy(() => import('./pages/Explore'))
 const NavSites = lazy(() => import('./pages/NavSites'))
@@ -88,6 +89,7 @@ function App() {
                       <Route path="/tag/:tag" element={<TagPage />} />
                       <Route path="/collection/:id" element={<CollectionDetail />} />
                       <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/terms" element={<Terms />} />
                       <Route path="/nav-sites" element={<NavSites />} />
                       <Route path="/prompts" element={<Prompts />} />
                       <Route path="/prompts/:id" element={<PromptDetail />} />

@@ -581,7 +581,7 @@ function AuthLayout({ characters, children }) {
           <div className="auth2-left-footer">
             <Link to="/privacy">Privacy</Link>
             <span>·</span>
-            <a href="#">Terms</a>
+            <Link to="/terms">Terms</Link>
           </div>
         </div>
         <div className="auth2-left-grid" />
