@@ -1,8 +1,13 @@
 /**
- * 图标迁移脚本：将 nav_sites 中的外部 icon_url 图片下载后上传到 Supabase Storage
+ * 图标迁移脚本：将表中的外部 icon_url 图片下载后上传到 Supabase Storage
  * 
  * 使用方法:
- *   node scripts/migrate-icons.mjs
+ *   node scripts/migrate-icons.mjs [表名]
+ * 
+ * 示例:
+ *   node scripts/migrate-icons.mjs              # 默认处理 nav_sites
+ *   node scripts/migrate-icons.mjs mcp_servers  # 处理 MCP 服务
+ *   node scripts/migrate-icons.mjs skills_data  # 处理 Skills 技能
  * 
  * 需要先设置环境变量（在 .env 文件中添加，或直接 export）:
  *   VITE_SUPABASE_URL=https://xxx.supabase.co
@@ -207,23 +212,28 @@ async function downloadImage(url) {
   return { buffer, contentType: contentType.split(';')[0].trim(), ext }
 }
 
+// ========== 命令行参数 ==========
+
+const TABLE = process.argv[2] || 'nav_sites'
+const FOLDER = TABLE.replace(/_/g, '-')  // nav_sites → nav, mcp_servers → mcp
+
 // ========== 生成唯一文件名（纯 ASCII，Supabase Storage 不支持中文 key） ==========
 
 function generateFilePath(ext) {
-  return `nav/${randomUUID()}.${ext}`
+  return `${FOLDER}/${randomUUID()}.${ext}`
 }
 
 // ========== 主流程 ==========
 
 async function main() {
-  console.log('🚀 图标迁移工具: nav_sites icon_url → Supabase Storage\n')
+  console.log(`🚀 图标迁移工具: ${TABLE} icon_url → Supabase Storage (folder: ${FOLDER})\n`)
 
   // 1. 确保 Storage bucket 存在
   await ensureBucketExists()
 
-  // 2. 查询所有导航站点
-  const sites = await dbQuery('nav_sites', '?select=*&order=sort_order.asc')
-  console.log(`📋 共查询到 ${sites.length} 个导航站点\n`)
+  // 2. 查询所有记录
+  const sites = await dbQuery(TABLE, '?select=*&order=sort_order.asc')
+  console.log(`📋 共查询到 ${sites.length} 条记录\n`)
 
   // 3. 筛选需要迁移的记录
   const toMigrate = sites.filter(s => {
@@ -269,7 +279,7 @@ async function main() {
       const publicUrl = await uploadToStorage(filePath, buffer, contentType)
 
       // 更新数据库
-      await dbUpdate('nav_sites', site.id, { icon_url: publicUrl })
+      await dbUpdate(TABLE, site.id, { icon_url: publicUrl })
 
       console.log(` ✅`)
       results.push({ name: site.name, status: 'success', url: publicUrl })
