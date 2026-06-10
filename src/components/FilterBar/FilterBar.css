@@ -3,10 +3,10 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5);
-  background: var(--elevation-card-bg);
-  backdrop-filter: blur(var(--elevation-card-blur));
-  -webkit-backdrop-filter: blur(var(--elevation-card-blur));
-  border: 1px solid var(--elevation-card-border);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--card-radius);
   overflow-x: auto;
   scrollbar-width: none;
@@ -58,6 +58,13 @@
   border-color: var(--glass-border-hover);
   color: var(--text-primary);
   background: var(--glass-bg);
+}
+
+[data-theme="light"] .filter-bar {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="light"] .filter-bar-pill:hover {

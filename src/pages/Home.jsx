@@ -257,28 +257,34 @@ function Home() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
+
     async function load() {
       try {
-        // 1. Featured works — only show admin-recommended works, no fallback
-        const featuredData = await sbQuery('works', {
-          params: '?select=*&is_featured=eq.true&order=likes_count.desc&limit=20'
-        })
-        if (featuredData && featuredData.length > 0) {
-          setFeaturedByPlatform(splitByPlatform(await enrichWithProfiles(featuredData)))
-        } else {
-          setFeaturedByPlatform({ web: [], mobile: [] })
-        }
-
-        // Parallel queries
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
-        const [trendingData, allWorksLite] = await Promise.all([
+
+        // ── 第一轮：所有独立查询并行 ──
+        const [featuredData, trendingData, allWorksLite, homeConfigData] = await Promise.all([
+          sbQuery('works', {
+            params: '?select=*&is_featured=eq.true&order=likes_count.desc&limit=20'
+          }),
           sbQuery('works', {
             params: `?select=*&created_at=gte.${sevenDaysAgo}&order=likes_count.desc&limit=20`
           }),
           sbQuery('works', { params: '?select=user_id,likes_count' }),
+          sbQuery('home_config', { params: '?select=*&order=sort_order.asc' }).catch(() => null),
         ])
 
-        // 2. Trending this week
+        if (cancelled) return
+
+        // 处理首页模块配置
+        if (homeConfigData) {
+          const configMap = {}
+          homeConfigData.forEach(c => { configMap[c.module_key] = c })
+          setHomeConfig(configMap)
+        }
+
+        // 热门不足 10 条时走 fallback
         let trending = trendingData || []
         if (trending.length < 10) {
           const fallback = await sbQuery('works', {
@@ -286,53 +292,61 @@ function Home() {
           })
           trending = fallback || []
         }
-        setTrendingByPlatform(splitByPlatform(await enrichWithProfiles(trending)))
 
-        // 3. Top Creators
-        if (allWorksLite) {
-          const creatorMap = {}
-          allWorksLite.forEach(w => {
-            if (!creatorMap[w.user_id]) {
-              creatorMap[w.user_id] = { userId: w.user_id, workCount: 0, totalLikes: 0 }
-            }
-            creatorMap[w.user_id].workCount++
-            creatorMap[w.user_id].totalLikes += (w.likes_count || 0)
-          })
-          const top = Object.values(creatorMap)
-            .sort((a, b) => b.totalLikes - a.totalLikes)
-            .slice(0, 5)
-          if (top.length) {
-            const cIds = top.map(c => c.userId)
-            const cProfiles = await sbQuery('profiles', {
-              params: `?select=id,username,avatar_url,bio&id=in.(${cIds.join(',')})`
+        if (cancelled) return
+
+        // ── 第二轮：所有 profile enrichment 并行 ──
+        const featuredForEnrich = (featuredData && featuredData.length > 0) ? featuredData : []
+        const [featuredEnriched, trendingEnriched, creatorProfiles] = await Promise.all([
+          featuredForEnrich.length ? enrichWithProfiles(featuredForEnrich) : Promise.resolve([]),
+          trending.length ? enrichWithProfiles(trending) : Promise.resolve([]),
+          (() => {
+            if (!allWorksLite) return Promise.resolve(null)
+            const creatorMap = {}
+            allWorksLite.forEach(w => {
+              if (!creatorMap[w.user_id]) {
+                creatorMap[w.user_id] = { userId: w.user_id, workCount: 0, totalLikes: 0 }
+              }
+              creatorMap[w.user_id].workCount++
+              creatorMap[w.user_id].totalLikes += (w.likes_count || 0)
             })
-            setTopCreators(top.map(c => ({
-              ...c,
-              profile: cProfiles?.find(p => p.id === c.userId) || null,
-            })))
-          }
-        }
+            const top = Object.values(creatorMap)
+              .sort((a, b) => b.totalLikes - a.totalLikes)
+              .slice(0, 5)
+            if (!top.length) return Promise.resolve(null)
+            const cIds = top.map(c => c.userId)
+            return sbQuery('profiles', {
+              params: `?select=id,username,avatar_url,bio&id=in.(${cIds.join(',')})`
+            }).then(cProfiles =>
+              top.map(c => ({ ...c, profile: cProfiles?.find(p => p.id === c.userId) || null }))
+            )
+          })(),
+        ])
 
-        // 4. Home module config
-        try {
-          const configData = await sbQuery('home_config', {
-            params: '?select=*&order=sort_order.asc'
-          })
-          if (configData) {
-            const configMap = {}
-            configData.forEach(c => { configMap[c.module_key] = c })
-            setHomeConfig(configMap)
-          }
-        } catch (e) {
-          // home_config table may not exist yet, silently ignore
+        if (cancelled) return
+
+        // ── 批量 setState ──
+        setFeaturedByPlatform(
+          featuredEnriched.length > 0
+            ? splitByPlatform(featuredEnriched)
+            : { web: [], mobile: [] }
+        )
+        setTrendingByPlatform(
+          trendingEnriched.length > 0
+            ? splitByPlatform(trendingEnriched)
+            : { web: [], mobile: [] }
+        )
+        if (creatorProfiles) {
+          setTopCreators(creatorProfiles)
         }
       } catch (err) {
         console.error('Failed to load home data:', err)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     load()
+    return () => { cancelled = true }
   }, [fetchWorksByIds])
 
   // Loading 骨架屏

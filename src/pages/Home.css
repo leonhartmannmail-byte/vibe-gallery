@@ -272,9 +272,10 @@
   left: 0;
   right: 0;
   height: 80px;
-  background: linear-gradient(to bottom, transparent, var(--bg-primary));
+  background: linear-gradient(to bottom, transparent, var(--bg-primary) 90%);
   pointer-events: none;
   z-index: 1;
+  opacity: 0.6;
 }
 
 .home-section-header {
